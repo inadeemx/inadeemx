@@ -264,7 +264,18 @@
   <div id="print-area"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/*
+  SUPABASE TEST CONNECTION
+  1) Put your Supabase Project URL below.
+  2) Put your Supabase anon/public key below.
+  Do NOT put a service_role key here.
+*/
+const SUPABASE_URL = 'https://nrxiwicenzlvpmadywtn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_0377eZCwmC4N0OEH1HVfpw_cX4nPR3a';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let ORDERS = [];
 let ENTRIES = [];
 let CHALLANS = [];
@@ -280,49 +291,163 @@ let ready = false;
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
 async function loadAll(){
+  // Temporary test mode: load everything from Supabase.
+  // Security/RLS is intentionally NOT configured yet.
   try{
-    const o = await window.storage.get('orders-data', false);
-    ORDERS = o ? JSON.parse(o.value) : [];
-  }catch(e){ ORDERS = []; }
-  try{
-    const c = await window.storage.get('cutting-entries-data', false);
-    ENTRIES = c ? JSON.parse(c.value) : [];
-  }catch(e){ ENTRIES = []; }
-  try{
-    const ch = await window.storage.get('challans-data', false);
-    CHALLANS = ch ? JSON.parse(ch.value) : [];
-  }catch(e){ CHALLANS = []; }
-  try{
-    const cnt = await window.storage.get('challan-counter-data', false);
-    CHALLAN_COUNTER = cnt ? Number(JSON.parse(cnt.value).value) : 0;
-  }catch(e){ CHALLAN_COUNTER = 0; }
-  try{
-    const comp = await window.storage.get('company-settings-data', false);
-    if(comp){ COMPANY = Object.assign({}, COMPANY, JSON.parse(comp.value)); }
-  }catch(e){ /* keep default COMPANY */ }
+    if(SUPABASE_URL.includes('PASTE_') || SUPABASE_ANON_KEY.includes('PASTE_')){
+      throw new Error('Supabase URL/anon key is not configured in index.html');
+    }
+
+    const {data:o, error:oe} = await supabaseClient.from('orders').select('*');
+    if(oe) throw oe;
+    ORDERS = (o||[]).map(x=>({
+      id:x.id,
+      fileNumber:x.file_number,
+      po:x.po,
+      country:x.country,
+      origin:x.origin || 'COMMON',
+      date:x.date,
+      color:x.color || '',
+      sizes:x.sizes || [],
+      createdAt:Number(x.created_at || 0)
+    }));
+
+    const {data:e, error:ee} = await supabaseClient.from('cutting_entries').select('*');
+    if(ee) throw ee;
+    ENTRIES = (e||[]).map(x=>({
+      id:x.id,
+      orderId:x.order_id,
+      date:x.date,
+      sizes:x.sizes || [],
+      createdAt:Number(x.created_at || 0)
+    }));
+
+    const {data:ch, error:che} = await supabaseClient.from('challans').select('*');
+    if(che) throw che;
+    CHALLANS = (ch||[]).map(x=>({
+      id:x.id,
+      challanNo:x.challan_no,
+      date:x.date,
+      issuedTo:x.issued_to || '',
+      fileNumber:x.file_number,
+      po:x.po,
+      rows:x.rows || [],
+      createdAt:Number(x.created_at || 0)
+    }));
+
+    const {data:cnt, error:ce} = await supabaseClient
+      .from('challan_counter').select('*').eq('id',1).maybeSingle();
+    if(ce) throw ce;
+    CHALLAN_COUNTER = cnt ? Number(cnt.value || 0) : 0;
+
+    const {data:comp, error:compe} = await supabaseClient
+      .from('company_settings').select('*').eq('id',1).maybeSingle();
+    if(compe) throw compe;
+    if(comp){
+      COMPANY = Object.assign({}, COMPANY, {
+        name:comp.name ?? COMPANY.name,
+        addr:comp.addr ?? COMPANY.addr,
+        gst:comp.gst ?? COMPANY.gst,
+        issuedTo:comp.issued_to ?? COMPANY.issuedTo
+      });
+    }
+  }catch(e){
+    console.error('Supabase load failed:', e);
+    ORDERS=[]; ENTRIES=[]; CHALLANS=[]; CHALLAN_COUNTER=0;
+    // Keep default COMPANY if settings could not be loaded.
+    const msg = String(e && e.message ? e.message : e);
+    if(msg.includes('not configured')){
+      console.warn('Add SUPABASE_URL and SUPABASE_ANON_KEY near the top of this script.');
+    } else {
+      console.warn('Supabase data could not be loaded:', msg);
+    }
+  }
   ready = true;
 }
 
 async function saveOrders(){
-  try{ await window.storage.set('orders-data', JSON.stringify(ORDERS), false); }
-  catch(e){ console.error('save orders failed', e); }
+  try{
+    const {error:delError} = await supabaseClient.from('orders').delete().neq('id','__never__');
+    if(delError) throw delError;
+    if(!ORDERS.length) return;
+    const rows = ORDERS.map(o=>({
+      id:o.id,
+      file_number:o.fileNumber,
+      po:o.po,
+      country:o.country,
+      origin:o.origin || 'COMMON',
+      date:o.date,
+      color:o.color || '',
+      sizes:o.sizes || [],
+      created_at:Number(o.createdAt || Date.now())
+    }));
+    const {error} = await supabaseClient.from('orders').insert(rows);
+    if(error) throw error;
+  }catch(e){ console.error('save orders failed', e); throw e; }
 }
+
 async function saveEntries(){
-  try{ await window.storage.set('cutting-entries-data', JSON.stringify(ENTRIES), false); }
-  catch(e){ console.error('save entries failed', e); }
+  try{
+    const {error:delError} = await supabaseClient.from('cutting_entries').delete().neq('id','__never__');
+    if(delError) throw delError;
+    if(!ENTRIES.length) return;
+    const rows = ENTRIES.map(e=>({
+      id:e.id,
+      order_id:e.orderId,
+      date:e.date,
+      sizes:e.sizes || [],
+      created_at:Number(e.createdAt || Date.now())
+    }));
+    const {error} = await supabaseClient.from('cutting_entries').insert(rows);
+    if(error) throw error;
+  }catch(e){ console.error('save entries failed', e); throw e; }
 }
+
 async function saveChallans(){
-  try{ await window.storage.set('challans-data', JSON.stringify(CHALLANS), false); }
-  catch(e){ console.error('save challans failed', e); }
+  try{
+    const {error:delError} = await supabaseClient.from('challans').delete().neq('id','__never__');
+    if(delError) throw delError;
+    if(!CHALLANS.length) return;
+    const rows = CHALLANS.map(ch=>({
+      id:ch.id,
+      challan_no:ch.challanNo,
+      date:ch.date,
+      issued_to:ch.issuedTo || '',
+      file_number:ch.fileNumber,
+      po:ch.po,
+      rows:ch.rows || [],
+      created_at:Number(ch.createdAt || Date.now())
+    }));
+    const {error} = await supabaseClient.from('challans').insert(rows);
+    if(error) throw error;
+  }catch(e){ console.error('save challans failed', e); throw e; }
 }
+
 async function saveCompany(){
-  try{ await window.storage.set('company-settings-data', JSON.stringify(COMPANY), false); }
-  catch(e){ console.error('save company failed', e); }
+  try{
+    const {error} = await supabaseClient.from('company_settings').upsert({
+      id:1,
+      name:COMPANY.name,
+      addr:COMPANY.addr,
+      gst:COMPANY.gst,
+      issued_to:COMPANY.issuedTo
+    }, {onConflict:'id'});
+    if(error) throw error;
+  }catch(e){ console.error('save company failed', e); throw e; }
 }
+
 async function nextChallanNo(){
   CHALLAN_COUNTER += 1;
-  try{ await window.storage.set('challan-counter-data', JSON.stringify({value:CHALLAN_COUNTER}), false); }
-  catch(e){ console.error('save counter failed', e); }
+  try{
+    const {error} = await supabaseClient.from('challan_counter').upsert({
+      id:1,
+      value:CHALLAN_COUNTER
+    }, {onConflict:'id'});
+    if(error) throw error;
+  }catch(e){
+    console.error('save counter failed', e);
+    throw e;
+  }
   return String(CHALLAN_COUNTER).padStart(4,'0');
 }
 
@@ -426,8 +551,16 @@ function renderNew(){
       msg.className='msg err show';
       return;
     }
-    ORDERS.push({id:uid(), fileNumber, po, country, origin, date, color, sizes, createdAt:Date.now()});
-    await saveOrders();
+    const newOrder = {id:uid(), fileNumber, po, country, origin, date, color, sizes, createdAt:Date.now()};
+    ORDERS.push(newOrder);
+    try{
+      await saveOrders();
+    }catch(e){
+      ORDERS.pop();
+      msg.textContent = 'Supabase save failed: ' + (e.message || e);
+      msg.className='msg err show';
+      return;
+    }
     msg.textContent = 'Order save ho gaya — File ' + fileNumber + ' / PO ' + po + ' / ' + country;
     msg.className='msg show';
     // Keep File Number, PO Number, Color, Origin AND the Size numbers as-is —
@@ -628,7 +761,16 @@ function renderCut(){
       Object.keys(byOrder).forEach(orderId=>{
         ENTRIES.push({id:uid(), orderId, date, sizes:byOrder[orderId], createdAt:Date.now()});
       });
-      await saveEntries();
+      try{
+        await saveEntries();
+      }catch(e){
+        // Reload current server state so the UI does not keep unsaved entries.
+        await loadAll();
+        msg.textContent = 'Supabase save failed: ' + (e.message || e);
+        msg.className='msg err show';
+        resultBox.innerHTML='';
+        return;
+      }
 
       // group by PO NUMBER (not by order) — one challan per PO, all its countries combined as rows
       const byPo = {};
@@ -657,7 +799,15 @@ function renderCut(){
         CHALLANS.push(challan);
         newChallans.push(challan);
       }
-      await saveChallans();
+      try{
+        await saveChallans();
+      }catch(e){
+        await loadAll();
+        msg.textContent = 'Challan Supabase save failed: ' + (e.message || e);
+        msg.className='msg err show';
+        resultBox.innerHTML='';
+        return;
+      }
 
       // build result summary
       const summaryHtml = allocationResult.map(r=>{
@@ -1078,16 +1228,30 @@ function sampleTrialOrders(){
 async function seedTrialData(){
   const already = ORDERS.some(o=>o.fileNumber==='8850' && o.po==='675857-8713' && o.country==='DE');
   if(already){ return await seedMiiExample(); }
+  const oldOrders = ORDERS.slice();
   ORDERS = ORDERS.concat(sampleTrialOrders());
-  await saveOrders();
-  return true;
+  try{
+    await saveOrders();
+    return true;
+  }catch(e){
+    ORDERS = oldOrders;
+    console.error('Seed data save failed:', e);
+    return false;
+  }
 }
 async function seedMiiExample(){
   const already = ORDERS.some(o=>o.fileNumber==='8850' && o.po==='675857-8713' && o.country==='IN' && o.origin==='MADE IN INDIA');
   if(already) return false;
+  const oldOrders = ORDERS.slice();
   ORDERS.push({id:uid(), fileNumber:'8850', po:'675857-8713', country:'IN', origin:'MADE IN INDIA', date:'2026-08-20', color:'Dark Red', sizes:[{size:'140',qty:40},{size:'146',qty:30}], createdAt:Date.now()});
-  await saveOrders();
-  return true;
+  try{
+    await saveOrders();
+    return true;
+  }catch(e){
+    ORDERS = oldOrders;
+    console.error('MII seed save failed:', e);
+    return false;
+  }
 }
 
 function escapeHtml(str){

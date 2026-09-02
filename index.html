@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cutting Issue Tracker</title>
+<style>
+  :root{
+    --ink:#0a0a0a;
+    --paper:#ffffff;
+    --line:#0a0a0a;
+    --grey:#6b6b6b;
+    --light:#f3f3f1;
+    --red:#c0231f;
+    --green:#1f7a3d;
+    --amber:#b5790a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:1000px;margin:0 auto;padding:18px 16px 60px;}
+
+  /* Header */
+  .brand{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:4px solid var(--ink);
+    padding-bottom:14px;margin-bottom:18px;flex-wrap:wrap;gap:8px;
+  }
+  .brand h1{
+    font-size:26px;font-weight:900;letter-spacing:0.5px;margin:0;
+    color:var(--ink);text-transform:uppercase;
+  }
+  .brand .tag{
+    font-size:12px;font-weight:800;color:var(--red);
+    letter-spacing:1.5px;text-transform:uppercase;border:2px solid var(--red);
+    padding:3px 8px;
+  }
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;margin-bottom:22px;flex-wrap:wrap;border:2px solid var(--ink);}
+  .tab{
+    flex:1;min-width:120px;text-align:center;padding:12px 8px;font-weight:800;font-size:13px;
+    letter-spacing:0.4px;text-transform:uppercase;cursor:pointer;background:var(--paper);color:var(--ink);
+    border-right:2px solid var(--ink);user-select:none;
+  }
+  .tab:last-child{border-right:none;}
+  .tab.active{background:var(--ink);color:var(--paper);}
+
+  h2.section-title{
+    font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    margin:0 0 14px;padding-bottom:8px;border-bottom:2px dashed var(--ink);color:var(--ink);
+  }
+
+  /* Forms */
+  label{display:block;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 5px;color:var(--ink);}
+  input[type=text],input[type=number],input[type=date],select{
+    width:100%;padding:10px 10px;border:2px solid var(--ink);background:var(--paper);
+    font-size:15px;font-weight:700;color:var(--ink);font-family:inherit;
+  }
+  input:focus,select:focus{outline:3px solid var(--red);outline-offset:0;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:150px;}
+
+  .size-row{display:flex;gap:10px;align-items:end;margin-bottom:8px;}
+  .size-row .sz{flex:1;}
+  .size-row .qty{flex:1;}
+  .size-row .rm{
+    background:var(--paper);border:2px solid var(--red);color:var(--red);font-weight:900;
+    width:38px;height:42px;cursor:pointer;font-size:16px;flex:none;
+  }
+
+  /* Horizontal size boxes — used wherever sizes are entered/shown in a line */
+  .size-box-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+  .size-box{
+    border:2px solid var(--ink);padding:8px;width:104px;position:relative;background:var(--paper);flex:none;
+  }
+  .size-box label{margin:0 0 4px;font-size:9px;text-align:center;}
+  .size-box input{padding:6px 4px;font-size:13px;text-align:center;}
+  .size-box .sz-input{margin-bottom:5px;}
+  .size-box .rm{
+    position:absolute;top:-9px;right:-9px;width:20px;height:20px;font-size:12px;line-height:1;
+    padding:0;border-radius:50%;background:var(--red);color:var(--paper);border:2px solid var(--paper);
+  }
+  .size-box .cf-label{display:block;font-weight:900;font-size:11px;text-align:center;margin-bottom:5px;}
+  .size-box .rem-tag{font-size:9px;color:var(--grey);text-align:center;font-weight:700;margin-top:3px;}
+  .add-size-btn{
+    margin-top:6px;background:var(--paper);border:2px dashed var(--ink);color:var(--ink);
+    font-weight:800;padding:9px 14px;cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;
+  }
+
+  .btn-primary{
+    margin-top:20px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);
+    font-weight:900;padding:13px 20px;cursor:pointer;font-size:14px;text-transform:uppercase;
+    letter-spacing:1px;width:100%;
+  }
+  .btn-primary:active{background:var(--red);border-color:var(--red);}
+  .msg{margin-top:12px;font-weight:800;font-size:13px;padding:10px;border:2px solid var(--green);color:var(--green);display:none;}
+  .msg.show{display:block;}
+  .msg.err{border-color:var(--red);color:var(--red);}
+
+  /* Order ticket card */
+  .ticket{
+    border:2px solid var(--ink);margin-bottom:14px;position:relative;background:var(--paper);
+  }
+  .ticket-head{
+    display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--paper);
+    padding:9px 12px;font-weight:900;font-size:13px;letter-spacing:0.5px;flex-wrap:wrap;gap:6px;
+  }
+  .ticket-head .po{font-size:15px;}
+  .ticket-head .country{
+    background:var(--paper);color:var(--ink);padding:2px 8px;font-weight:900;letter-spacing:1px;
+  }
+  .ticket-body{padding:12px;}
+  .ticket-meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--grey);margin-bottom:10px;}
+  .ticket-meta b{color:var(--ink);}
+  table.sizes{width:100%;border-collapse:collapse;font-size:13px;}
+  table.sizes th{
+    text-align:center;font-weight:900;text-transform:uppercase;font-size:10.5px;letter-spacing:0.5px;
+    border-bottom:2px solid var(--ink);padding:6px 4px;color:var(--ink);
+  }
+  table.sizes td{text-align:center;padding:6px 4px;border-bottom:1px solid #ddd;font-weight:700;}
+  .status-pill{
+    display:inline-block;font-size:11px;font-weight:900;padding:3px 10px;letter-spacing:0.5px;
+    text-transform:uppercase;margin-top:8px;
+  }
+  .status-pending{border:2px solid var(--red);color:var(--red);}
+  .status-progress{border:2px solid var(--amber);color:var(--amber);}
+  .status-done{border:2px solid var(--green);color:var(--green);}
+
+  .filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .filters input,.filters select{flex:1;min-width:130px;}
+
+  .empty{
+    text-align:center;padding:40px 10px;color:var(--grey);font-weight:700;font-size:14px;
+    border:2px dashed #ccc;
+  }
+
+  .qty-badge{font-size:11px;font-weight:900;padding:1px 6px;border:1px solid var(--ink);}
+
+  .date-group{margin-bottom:20px;}
+  .date-group h3{
+    font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    background:var(--light);border-left:5px solid var(--red);padding:8px 10px;margin:0 0 10px;color:var(--ink);
+  }
+
+  .loading{text-align:center;padding:30px;font-weight:800;color:var(--grey);}
+
+  /* Challan generated card */
+  .challan-card{
+    border:2px solid var(--ink);padding:10px 12px;margin-bottom:10px;display:flex;
+    justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .challan-card .cno{font-weight:900;font-size:13px;}
+  .challan-card .cmeta{font-size:11px;font-weight:700;color:var(--grey);}
+  .print-btn{
+    background:var(--red);color:var(--paper);border:2px solid var(--red);font-weight:900;
+    padding:8px 14px;cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;
+  }
+
+  /* Print overlay */
+  .print-overlay{display:none;position:fixed;inset:0;background:#ffffff;z-index:9999;overflow:auto;}
+  .print-overlay.show{display:block;}
+  .print-toolbar{
+    position:sticky;top:0;background:var(--ink);padding:10px 16px;display:flex;gap:10px;
+    justify-content:flex-end;z-index:2;
+  }
+  .print-toolbar button{
+    font-weight:900;padding:9px 18px;border:2px solid var(--paper);background:var(--paper);color:var(--ink);
+    cursor:pointer;text-transform:uppercase;font-size:12px;letter-spacing:0.5px;
+  }
+  .print-toolbar button.close-btn{background:var(--ink);color:var(--paper);}
+
+  .challan-doc{width:190mm;max-width:100%;margin:0 auto;padding:10mm;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:12px;background:#fff;}
+  .challan-doc .co-name{font-size:19px;font-weight:900;margin:0;}
+  .challan-doc .co-addr{font-size:11px;margin:2px 0;}
+  .challan-doc .co-gst{font-size:11px;font-weight:700;}
+  .challan-doc .ch-top{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;flex-wrap:wrap;gap:6px;}
+  .challan-doc .ch-title{
+    text-align:center;font-weight:900;font-size:13px;letter-spacing:0.5px;margin:12px 0 8px;
+    border-top:1px solid #000;border-bottom:1px solid #000;padding:4px 0;text-transform:uppercase;
+  }
+  .challan-doc .ch-meta-line{font-size:11.5px;margin:3px 0;}
+  table.challan-table{width:100%;border-collapse:collapse;margin-top:8px;}
+  table.challan-table th,table.challan-table td{border:1px solid #000;padding:5px 6px;font-size:11px;text-align:center;}
+  table.challan-table th{font-weight:900;background:#eee;}
+  table.challan-table td.desc{text-align:left;}
+  .challan-doc .total-row td{font-weight:900;}
+  .challan-sign{display:flex;justify-content:space-between;margin-top:46px;}
+  .challan-sign div{border-top:1px solid #000;padding-top:5px;font-size:11px;width:30%;text-align:center;font-weight:700;}
+  .challan-doc .remarks{margin-top:16px;font-size:11.5px;}
+
+  /* Two copies side by side on one page, like the original challan */
+  .challan-page{display:flex;width:277mm;max-width:100%;margin:0 auto;}
+  .challan-page .challan-doc{
+    flex:1 1 50%;width:auto;padding:7mm 8mm;font-size:9.5px;margin:0;
+  }
+  .challan-page .challan-doc:nth-child(2){border-left:1px dashed #000;}
+  .challan-page .challan-doc .co-name{font-size:14px;}
+  .challan-page .challan-doc .co-addr,
+  .challan-page .challan-doc .co-gst,
+  .challan-page .challan-doc .ch-meta-line{font-size:9px;}
+  .challan-page .challan-doc .ch-title{font-size:10.5px;margin:8px 0 6px;padding:3px 0;}
+  .challan-page table.challan-table th,
+  .challan-page table.challan-table td{padding:3px 4px;font-size:9px;}
+  .challan-page .challan-sign{margin-top:26px;}
+  .challan-page .challan-sign div{font-size:9px;}
+  .challan-page .remarks{margin-top:10px;font-size:9px;}
+
+  @page{ size: A4 landscape; margin:8mm; }
+
+  /* File Sheet — size matrix (sizes across top, countries down the side), grouped by PO */
+  .sheet-doc{width:277mm;max-width:100%;margin:0 auto;padding:8mm;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;}
+  .sheet-doc .co-name{font-size:16px;font-weight:900;margin:0;}
+  .sheet-doc .co-addr{font-size:11px;margin:2px 0 10px;}
+  .sheet-file-title{font-weight:900;font-size:13px;letter-spacing:0.5px;border-top:1px solid #000;border-bottom:1px solid #000;padding:5px 0;margin-bottom:14px;text-transform:uppercase;}
+  .sheet-block{margin-bottom:18px;}
+  .sheet-block-head{display:flex;gap:24px;font-size:12px;font-weight:800;margin-bottom:6px;flex-wrap:wrap;}
+  table.sheet-table{width:100%;border-collapse:collapse;}
+  table.sheet-table th,table.sheet-table td{border:1px solid #000;padding:5px 6px;font-size:11px;text-align:center;}
+  table.sheet-table th{font-weight:900;background:#eee;}
+  table.sheet-table tr.total-row td{font-weight:900;background:#f5f5f5;}
+  table.sheet-table tr.grand-total-row td{font-weight:900;background:#0a0a0a;color:#fff;}
+  table.sheet-table tr.date-sep td{
+    text-align:left;background:#0a0a0a;color:#fff;font-weight:900;font-size:10.5px;
+    letter-spacing:0.5px;text-transform:uppercase;padding:5px 7px;
+  }
+  table.sheet-table tr.mii-row td{background:#ffe066;}
+  table.sheet-table tr.mii-row td:first-child{font-weight:900;}
+
+  @media print{
+    body *{visibility:hidden;}
+    .print-toolbar{display:none !important;}
+    #print-area, #print-area *{visibility:visible;}
+    #print-area{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="brand">
+    <h1>Cutting Issue Tracker</h1>
+    <span class="tag">PO / Country Wise</span>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="new">Naya Order</div>
+    <div class="tab" data-tab="list">Orders List</div>
+    <div class="tab" data-tab="filesheet">File Sheet</div>
+    <div class="tab" data-tab="cut">Cutting Issue</div>
+    <div class="tab" data-tab="date">Date Wise</div>
+    <div class="tab" data-tab="challans">Challans</div>
+    <div class="tab" data-tab="settings">Settings</div>
+  </div>
+  <div id="content"><div class="loading">Loading...</div></div>
+</div>
+
+<div class="print-overlay" id="print-overlay">
+  <div class="print-toolbar">
+    <button type="button" id="do-print-btn">Print Karein</button>
+    <button type="button" class="close-btn" id="close-print-btn">Band Karein</button>
+  </div>
+  <div id="print-area"></div>
+</div>
+
+<script>
+let ORDERS = [];
+let ENTRIES = [];
+let CHALLANS = [];
+let CHALLAN_COUNTER = 0;
+let COMPANY = {
+  name: 'VIRAJ EXPORTS PVT. LTD.',
+  addr: 'C-66, Sector - 57, Noida, U.P. 201 301',
+  gst: '09AABCV3062D1ZK',
+  issuedTo: 'Prod unit-C-66 - Sect-57 - LINE-4'
+};
+let ready = false;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+async function loadAll(){
+  try{
+    const o = await window.storage.get('orders-data', false);
+    ORDERS = o ? JSON.parse(o.value) : [];
+  }catch(e){ ORDERS = []; }
+  try{
+    const c = await window.storage.get('cutting-entries-data', false);
+    ENTRIES = c ? JSON.parse(c.value) : [];
+  }catch(e){ ENTRIES = []; }
+  try{
+    const ch = await window.storage.get('challans-data', false);
+    CHALLANS = ch ? JSON.parse(ch.value) : [];
+  }catch(e){ CHALLANS = []; }
+  try{
+    const cnt = await window.storage.get('challan-counter-data', false);
+    CHALLAN_COUNTER = cnt ? Number(JSON.parse(cnt.value).value) : 0;
+  }catch(e){ CHALLAN_COUNTER = 0; }
+  try{
+    const comp = await window.storage.get('company-settings-data', false);
+    if(comp){ COMPANY = Object.assign({}, COMPANY, JSON.parse(comp.value)); }
+  }catch(e){ /* keep default COMPANY */ }
+  ready = true;
+}
+
+async function saveOrders(){
+  try{ await window.storage.set('orders-data', JSON.stringify(ORDERS), false); }
+  catch(e){ console.error('save orders failed', e); }
+}
+async function saveEntries(){
+  try{ await window.storage.set('cutting-entries-data', JSON.stringify(ENTRIES), false); }
+  catch(e){ console.error('save entries failed', e); }
+}
+async function saveChallans(){
+  try{ await window.storage.set('challans-data', JSON.stringify(CHALLANS), false); }
+  catch(e){ console.error('save challans failed', e); }
+}
+async function saveCompany(){
+  try{ await window.storage.set('company-settings-data', JSON.stringify(COMPANY), false); }
+  catch(e){ console.error('save company failed', e); }
+}
+async function nextChallanNo(){
+  CHALLAN_COUNTER += 1;
+  try{ await window.storage.set('challan-counter-data', JSON.stringify({value:CHALLAN_COUNTER}), false); }
+  catch(e){ console.error('save counter failed', e); }
+  return String(CHALLAN_COUNTER).padStart(4,'0');
+}
+
+function issuedForOrder(orderId){
+  const map = {};
+  ENTRIES.filter(e=>e.orderId===orderId).forEach(e=>{
+    e.sizes.forEach(s=>{ map[s.size] = (map[s.size]||0) + Number(s.qty); });
+  });
+  return map;
+}
+
+function orderStatus(order){
+  const issued = issuedForOrder(order.id);
+  let target=0, done=0;
+  order.sizes.forEach(s=>{ target += Number(s.qty); done += Number(issued[s.size]||0); });
+  if(done<=0) return {label:'Pending', cls:'status-pending', done, target};
+  if(done>=target) return {label:'Complete', cls:'status-done', done, target};
+  return {label:'Chalu Hai', cls:'status-progress', done, target};
+}
+
+/* ---------- TAB: NEW ORDER ---------- */
+function renderNew(){
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <h2 class="section-title">Naya File / PO / Country Entry</h2>
+    <div class="row">
+      <div>
+        <label>File Number</label>
+        <input type="text" id="f-file" placeholder="e.g. F-101" list="file-list">
+        <datalist id="file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist>
+      </div>
+      <div>
+        <label>PO Number</label>
+        <input type="text" id="f-po" placeholder="e.g. PO-4521">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Country Code</label>
+        <input type="text" id="f-country" placeholder="e.g. US, UK, AE" style="text-transform:uppercase">
+      </div>
+      <div>
+        <label>Origin</label>
+        <select id="f-origin">
+          <option value="COMMON">Common</option>
+          <option value="MADE IN INDIA">Made In India</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Cutting Date</label>
+        <input type="date" id="f-date">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Color (optional)</label>
+        <input type="text" id="f-color" placeholder="e.g. Dark Red">
+      </div>
+    </div>
+
+    <label>Size Wise Order Qty</label>
+    <div id="size-rows" class="size-box-wrap"></div>
+    <button type="button" class="add-size-btn" id="add-size-btn">+ Size Add Karein</button>
+
+    <button type="button" class="btn-primary" id="save-order-btn">Order Save Karein</button>
+    <div class="msg" id="new-msg"></div>
+  `;
+  const sizeRows = document.getElementById('size-rows');
+  function addSizeRow(size='', qty=''){
+    const div = document.createElement('div');
+    div.className='size-box';
+    div.innerHTML = `
+      <button type="button" class="rm">×</button>
+      <input type="number" placeholder="Size" class="sz-input" value="${size}">
+      <input type="number" placeholder="Qty" class="qty-input" value="${qty}">
+    `;
+    div.querySelector('.rm').onclick = ()=> div.remove();
+    sizeRows.appendChild(div);
+  }
+  addSizeRow(); addSizeRow(); addSizeRow();
+  document.getElementById('add-size-btn').onclick = ()=> addSizeRow();
+
+  document.getElementById('save-order-btn').onclick = async ()=>{
+    const fileNumber = document.getElementById('f-file').value.trim();
+    const po = document.getElementById('f-po').value.trim();
+    const country = document.getElementById('f-country').value.trim().toUpperCase();
+    const origin = document.getElementById('f-origin').value;
+    const date = document.getElementById('f-date').value;
+    const color = document.getElementById('f-color').value.trim();
+    const sizes = [];
+    sizeRows.querySelectorAll('.size-box').forEach(row=>{
+      const sz = row.querySelector('.sz-input').value.trim();
+      const qty = row.querySelector('.qty-input').value.trim();
+      if(sz!=='' && qty!==''){ sizes.push({size:sz, qty:Number(qty)}); }
+    });
+    const msg = document.getElementById('new-msg');
+    if(!fileNumber || !po || !country || !date || sizes.length===0){
+      msg.textContent = 'File Number, PO Number, Country Code, Date aur kam se kam ek Size zaroori hai.';
+      msg.className='msg err show';
+      return;
+    }
+    ORDERS.push({id:uid(), fileNumber, po, country, origin, date, color, sizes, createdAt:Date.now()});
+    await saveOrders();
+    msg.textContent = 'Order save ho gaya — File ' + fileNumber + ' / PO ' + po + ' / ' + country;
+    msg.className='msg show';
+    // Keep File Number, PO Number, Color, Origin AND the Size numbers as-is —
+    // only clear Country and the Quantities, so user can quickly add the next country.
+    document.getElementById('f-country').value='';
+    sizeRows.querySelectorAll('.qty-input').forEach(inp=> inp.value='');
+    document.getElementById('f-country').focus();
+  };
+}
+
+/* ---------- TAB: ORDERS LIST ---------- */
+function renderList(){
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <h2 class="section-title">Sab Orders</h2>
+    <div class="filters">
+      <input type="text" id="filt-file" placeholder="File Number search">
+      <input type="text" id="filt-po" placeholder="PO Number search">
+      <input type="text" id="filt-country" placeholder="Country Code search">
+      <input type="date" id="filt-date">
+    </div>
+    <div id="orders-container"></div>
+  `;
+  const draw = ()=>{
+    const ff = document.getElementById('filt-file').value.trim().toLowerCase();
+    const fp = document.getElementById('filt-po').value.trim().toLowerCase();
+    const fc = document.getElementById('filt-country').value.trim().toLowerCase();
+    const fd = document.getElementById('filt-date').value;
+    let list = ORDERS.filter(o=>{
+      if(ff && !(o.fileNumber||'').toLowerCase().includes(ff)) return false;
+      if(fp && !o.po.toLowerCase().includes(fp)) return false;
+      if(fc && !o.country.toLowerCase().includes(fc)) return false;
+      if(fd && o.date !== fd) return false;
+      return true;
+    }).sort((a,b)=> (a.fileNumber||'').localeCompare(b.fileNumber||'') || a.date.localeCompare(b.date));
+    const cont = document.getElementById('orders-container');
+    if(list.length===0){
+      cont.innerHTML = '<div class="empty">Koi order nahi mila.</div>';
+      return;
+    }
+    cont.innerHTML = list.map(o=>{
+      const st = orderStatus(o);
+      const issued = issuedForOrder(o.id);
+      const sizeHead = o.sizes.map(s=>`<th>${escapeHtml(String(s.size))}</th>`).join('');
+      const orderRow = o.sizes.map(s=>`<td>${s.qty}</td>`).join('');
+      const cutRow = o.sizes.map(s=>`<td>${issued[s.size]||0}</td>`).join('');
+      const remRow = o.sizes.map(s=>`<td>${Math.max(0, s.qty-(issued[s.size]||0))}</td>`).join('');
+      return `
+        <div class="ticket">
+          <div class="ticket-head">
+            <span class="po">File: ${escapeHtml(o.fileNumber||'—')} &nbsp;|&nbsp; PO: ${escapeHtml(o.po)}</span>
+            <span class="country">${escapeHtml(o.country)}</span>
+          </div>
+          <div class="ticket-body">
+            <div class="ticket-meta">
+              <span><b>Cutting Date:</b> ${o.date}</span>
+              <span><b>Origin:</b> ${escapeHtml(o.origin||'COMMON')}</span>
+              ${o.remark? `<span><b>Remark:</b> ${escapeHtml(o.remark)}</span>`:''}
+            </div>
+            <table class="sizes">
+              <tr><th>Size &darr;</th>${sizeHead}</tr>
+              <tr><td style="text-align:left;font-weight:900;">Order Qty</td>${orderRow}</tr>
+              <tr><td style="text-align:left;font-weight:900;">Cut Ho Gaya</td>${cutRow}</tr>
+              <tr><td style="text-align:left;font-weight:900;">Baaki</td>${remRow}</tr>
+            </table>
+            <span class="status-pill ${st.cls}">${st.label} — ${st.done}/${st.target}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+  document.getElementById('filt-file').oninput = draw;
+  document.getElementById('filt-po').oninput = draw;
+  document.getElementById('filt-country').oninput = draw;
+  document.getElementById('filt-date').oninput = draw;
+  draw();
+}
+
+/* ---------- TAB: CUTTING ISSUE ENTRY ---------- */
+// Given a fileNumber, sorted list of orders (POs) in that file, earliest cutting date first.
+function ordersInFile(fileNumber){
+  return ORDERS.filter(o=>o.fileNumber===fileNumber)
+    .sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
+}
+
+// Allocate an entered qty (per size) across the file's POs, earliest cutting date first.
+// Returns { bySize: [{size, allocations:[{orderId,po,country,date,qty}], unallocated}] }
+function allocateForFile(fileNumber, sizeQtyMap){
+  const list = ordersInFile(fileNumber);
+  const result = [];
+  for(const size in sizeQtyMap){
+    let remaining = Number(sizeQtyMap[size]);
+    if(!(remaining>0)) continue;
+    const allocations = [];
+    for(const order of list){
+      if(remaining<=0) break;
+      const sizeEntry = order.sizes.find(s=>String(s.size)===String(size));
+      if(!sizeEntry) continue;
+      const issued = issuedForOrder(order.id)[size] || 0;
+      const need = sizeEntry.qty - issued;
+      if(need<=0) continue;
+      const give = Math.min(need, remaining);
+      allocations.push({orderId:order.id, po:order.po, country:order.country, date:order.date, qty:give});
+      remaining -= give;
+    }
+    result.push({size, allocations, unallocated: remaining});
+  }
+  return result;
+}
+
+function renderCut(){
+  const c = document.getElementById('content');
+  const fileNumbers = [...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].sort();
+  c.innerHTML = `
+    <h2 class="section-title">Cutting Issue Karein</h2>
+    ${ORDERS.length===0? '<div class="empty">Pehle "Naya Order" tab se File / PO / Country entry karein.</div>' : `
+    <label>File Number</label>
+    <input type="text" id="cf-file" placeholder="File number daalein" list="cf-file-list">
+    <datalist id="cf-file-list">${fileNumbers.map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist>
+    <div id="cf-queue"></div>
+    <div id="cf-form"></div>
+    `}
+  `;
+  if(ORDERS.length===0) return;
+
+  const queueBox = document.getElementById('cf-queue');
+  const formBox = document.getElementById('cf-form');
+
+  function showQueue(fileNumber){
+    const list = ordersInFile(fileNumber);
+    if(list.length===0){ queueBox.innerHTML=''; return; }
+    queueBox.innerHTML = `
+      <label style="margin-top:18px;">Is File Ke PO — Cutting Date Ke Hisab Se Priority</label>
+      ${list.map((o,i)=>{
+        const st = orderStatus(o);
+        return `
+          <div class="ticket">
+            <div class="ticket-head">
+              <span class="po">#${i+1} Priority — PO: ${escapeHtml(o.po)} (${o.date})</span>
+              <span class="country">${escapeHtml(o.country)}</span>
+            </div>
+            <div class="ticket-body">
+              <span class="status-pill ${st.cls}">${st.label} — ${st.done}/${st.target}</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    `;
+  }
+
+  function showForm(fileNumber){
+    const list = ordersInFile(fileNumber);
+    if(list.length===0){ formBox.innerHTML=''; return; }
+    // union of sizes across all POs in this file, keep incomplete ones sensible
+    const sizeSet = [];
+    list.forEach(o=> o.sizes.forEach(s=>{ if(!sizeSet.includes(s.size)) sizeSet.push(s.size); }));
+    const today = new Date().toISOString().slice(0,10);
+    const rows = sizeSet.map(sz=>`
+      <div class="size-box">
+        <span class="cf-label">${escapeHtml(String(sz))}</span>
+        <input type="number" class="cf-qty-input" data-size="${escapeHtml(String(sz))}" placeholder="Pcs" min="0">
+      </div>
+    `).join('');
+    formBox.innerHTML = `
+      <label>Cutting Issue Date</label>
+      <input type="date" id="cf-date" value="${today}">
+      <label>Issued To</label>
+      <input type="text" id="cf-issued-to" value="${escapeHtml(COMPANY.issuedTo||'')}" placeholder="e.g. Prod unit - Line 4">
+      <label>Size Wise Pcs Quantity (Jo Aaj Cut Hui)</label>
+      <div class="size-box-wrap">${rows}</div>
+      <button type="button" class="btn-primary" id="cf-save-btn">Cutting Issue Save Karein — Auto PO/Country Find Karega</button>
+      <div class="msg" id="cf-msg"></div>
+      <div id="cf-result"></div>
+    `;
+    document.getElementById('cf-save-btn').onclick = async ()=>{
+      const date = document.getElementById('cf-date').value;
+      const issuedTo = document.getElementById('cf-issued-to').value.trim();
+      const msg = document.getElementById('cf-msg');
+      const resultBox = document.getElementById('cf-result');
+      if(!date){ msg.textContent='Date daalein.'; msg.className='msg err show'; resultBox.innerHTML=''; return; }
+      const sizeQtyMap = {};
+      formBox.querySelectorAll('.cf-qty-input').forEach(inp=>{
+        const v = inp.value.trim();
+        if(v!=='' && Number(v)>0){ sizeQtyMap[inp.dataset.size] = Number(v); }
+      });
+      if(Object.keys(sizeQtyMap).length===0){ msg.textContent='Kam se kam ek size mein qty daalein.'; msg.className='msg err show'; resultBox.innerHTML=''; return; }
+
+      const allocationResult = allocateForFile(fileNumber, sizeQtyMap);
+
+      // group allocations by orderId to create cutting entries
+      const byOrder = {};
+      allocationResult.forEach(r=>{
+        r.allocations.forEach(a=>{
+          if(!byOrder[a.orderId]) byOrder[a.orderId] = [];
+          byOrder[a.orderId].push({size:r.size, qty:a.qty});
+        });
+      });
+      Object.keys(byOrder).forEach(orderId=>{
+        ENTRIES.push({id:uid(), orderId, date, sizes:byOrder[orderId], createdAt:Date.now()});
+      });
+      await saveEntries();
+
+      // group by PO NUMBER (not by order) — one challan per PO, all its countries combined as rows
+      const byPo = {};
+      Object.keys(byOrder).forEach(orderId=>{
+        const order = ORDERS.find(o=>o.id===orderId);
+        if(!order) return;
+        if(!byPo[order.po]) byPo[order.po] = [];
+        byOrder[orderId].forEach(s=>{
+          byPo[order.po].push({country:order.country, origin:order.origin||'COMMON', size:s.size, qty:s.qty, color:order.color||''});
+        });
+      });
+
+      const newChallans = [];
+      for(const po of Object.keys(byPo)){
+        const challanNo = await nextChallanNo();
+        const challan = {
+          id: uid(),
+          challanNo,
+          date,
+          issuedTo,
+          fileNumber,
+          po,
+          rows: byPo[po].slice(),
+          createdAt: Date.now()
+        };
+        CHALLANS.push(challan);
+        newChallans.push(challan);
+      }
+      await saveChallans();
+
+      // build result summary
+      const summaryHtml = allocationResult.map(r=>{
+        const allocLines = r.allocations.map(a=>
+          `<div>→ <b>${a.qty} pcs</b> gaya PO <b>${escapeHtml(a.po)}</b> / <b>${escapeHtml(a.country)}</b> ko (cutting date ${a.date})</div>`
+        ).join('');
+        return `
+          <div style="margin-bottom:10px;">
+            <div style="font-weight:900;">Size ${escapeHtml(String(r.size))}:</div>
+            ${allocLines || '<div>Koi PO ki requirement baaki nahi thi.</div>'}
+            ${r.unallocated>0 ? `<div style="color:var(--red);font-weight:800;">⚠ ${r.unallocated} pcs allocate nahi ho paye — is file ki saari PO complete ho chuki hain size ${escapeHtml(String(r.size))} mein.</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const challanCards = newChallans.map(ch=>{
+        const countries = [...new Set(ch.rows.map(r=>r.country))].join(', ');
+        return `
+        <div class="challan-card">
+          <div>
+            <div class="cno">Challan No: ${ch.challanNo}</div>
+            <div class="cmeta">File ${escapeHtml(ch.fileNumber)} — PO ${escapeHtml(ch.po)} — Countries: ${escapeHtml(countries)}</div>
+          </div>
+          <button type="button" class="print-btn" data-challan-id="${ch.id}">Print Challan</button>
+        </div>
+      `;}).join('');
+
+      resultBox.innerHTML = `
+        <div class="msg show" style="display:block;">${summaryHtml}</div>
+        <label style="margin-top:16px;">Challan Bane — Print Karein</label>
+        ${challanCards}
+      `;
+      resultBox.querySelectorAll('.print-btn').forEach(btn=>{
+        btn.onclick = ()=>{
+          const ch = CHALLANS.find(c=>c.id===btn.dataset.challanId);
+          if(ch) openPrintChallan(ch);
+        };
+      });
+
+      msg.textContent = 'Cutting issue save ho gayi aur challan ban gaya.';
+      msg.className='msg show';
+
+      showQueue(fileNumber);
+      // clear qty inputs
+      formBox.querySelectorAll('.cf-qty-input').forEach(inp=> inp.value='');
+    };
+  }
+
+  const fileInput = document.getElementById('cf-file');
+  fileInput.oninput = ()=>{
+    const fn = fileInput.value.trim();
+    const list = ordersInFile(fn);
+    if(!fn){ queueBox.innerHTML=''; formBox.innerHTML=''; return; }
+    if(list.length===0){
+      queueBox.innerHTML = '<div class="empty">Is File Number ke under koi PO/Order nahi mila.</div>';
+      formBox.innerHTML='';
+      return;
+    }
+    showQueue(fn);
+    showForm(fn);
+  };
+}
+
+/* ---------- TAB: DATE WISE ---------- */
+function renderDate(){
+  const c = document.getElementById('content');
+  const today = new Date().toISOString().slice(0,10);
+  c.innerHTML = `
+    <h2 class="section-title">Date Wise — Multiple Country Cutting</h2>
+    <label>Date Chunein</label>
+    <input type="date" id="dv-date" value="${today}">
+    <div id="dv-container" style="margin-top:16px;"></div>
+  `;
+  const draw = ()=>{
+    const date = document.getElementById('dv-date').value;
+    const list = ORDERS.filter(o=>o.date===date);
+    const cont = document.getElementById('dv-container');
+    if(list.length===0){
+      cont.innerHTML = '<div class="empty">Is date par koi order schedule nahi hai.</div>';
+      return;
+    }
+    // group by country
+    const byCountry = {};
+    list.forEach(o=>{ (byCountry[o.country] = byCountry[o.country]||[]).push(o); });
+    cont.innerHTML = Object.keys(byCountry).sort().map(country=>{
+      const orders = byCountry[country];
+      const cards = orders.map(o=>{
+        const st = orderStatus(o);
+        return `
+          <div class="ticket">
+            <div class="ticket-head">
+              <span class="po">File: ${escapeHtml(o.fileNumber||'—')} &nbsp;|&nbsp; PO: ${escapeHtml(o.po)}</span>
+              <span class="qty-badge" style="background:var(--paper);color:var(--ink);">${st.done}/${st.target}</span>
+            </div>
+            <div class="ticket-body">
+              <span class="status-pill ${st.cls}">${st.label}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      return `<div class="date-group"><h3>Country: ${escapeHtml(country)} (${orders.length} PO)</h3>${cards}</div>`;
+    }).join('');
+  };
+  document.getElementById('dv-date').onchange = draw;
+  draw();
+}
+
+/* ---------- CHALLAN PRINT ---------- */
+function buildChallanHtml(challan){
+  // Pivot: sizes become columns, one row per country (horizontal size breakup)
+  const sizeOrder = [];
+  challan.rows.forEach(r=>{ if(!sizeOrder.includes(r.size)) sizeOrder.push(r.size); });
+  sizeOrder.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
+
+  const byCountry = {};
+  const countryOrder = [];
+  challan.rows.forEach(r=>{
+    if(!byCountry[r.country]){ byCountry[r.country]=[]; countryOrder.push(r.country); byCountry[r.country]._color = r.color||''; byCountry[r.country]._origin = r.origin||'COMMON'; }
+    byCountry[r.country].push(r);
+  });
+
+  const sizeHeadHtml = sizeOrder.map(sz=>`<th>${escapeHtml(String(sz))}</th>`).join('');
+  const colTotals = {}; sizeOrder.forEach(sz=> colTotals[sz]=0);
+  let grandTotal = 0;
+
+  const bodyRowsHtml = countryOrder.map((country,i)=>{
+    const list = byCountry[country];
+    const bySize = {}; list.forEach(r=> bySize[r.size]=Number(r.qty));
+    let rowTotal = 0;
+    const sizeCellsHtml = sizeOrder.map(sz=>{
+      const q = bySize[sz]||0;
+      rowTotal += q; colTotals[sz]+=q;
+      return `<td>${q>0?q:'-'}</td>`;
+    }).join('');
+    grandTotal += rowTotal;
+    const originSuffix = list._origin === 'MADE IN INDIA' ? ' - MADE IN INDIA' : '';
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(challan.fileNumber)}</td>
+        <td class="desc">CUTTING - ISSUE - (${escapeHtml(country)} - ${escapeHtml(challan.po)})${originSuffix}</td>
+        <td></td>
+        ${sizeCellsHtml}
+        <td><b>${rowTotal}</b></td>
+        <td>PCS</td>
+        <td>${escapeHtml(list._color||'')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const totalRowCells = sizeOrder.map(sz=>`<td>${colTotals[sz]}</td>`).join('');
+
+  return `
+    <div class="challan-doc">
+      <p class="co-name">${escapeHtml(COMPANY.name)}</p>
+      <p class="co-addr">${escapeHtml(COMPANY.addr)}</p>
+      <p class="co-gst">${escapeHtml(COMPANY.gst)}</p>
+      <div class="ch-top">
+        <div>
+          <div class="ch-meta-line"><b>No:</b> ${escapeHtml(challan.challanNo)}</div>
+          <div class="ch-meta-line"><b>Date:</b> ${challan.date}</div>
+        </div>
+        <div>
+          <div class="ch-meta-line"><b>Issued To:</b> ${escapeHtml(challan.issuedTo||'')}</div>
+          <div class="ch-meta-line">${escapeHtml(COMPANY.addr)}</div>
+          <div class="ch-meta-line"><b>GST No:</b> ${escapeHtml(COMPANY.gst)}</div>
+        </div>
+      </div>
+      <div class="ch-title">Inhouse / Inter Unit Transfer Challan</div>
+      <div class="ch-meta-line">Vehicle No: ______________&nbsp;&nbsp;&nbsp; Driver Name: ______________&nbsp;&nbsp;&nbsp; EWay No: ______________</div>
+      <table class="challan-table">
+        <tr>
+          <th>SL.<br>NO</th><th>FILE<br>NO</th><th>Item Description</th><th>HSN</th>${sizeHeadHtml}<th>Total</th><th>Unit</th><th>Color</th>
+        </tr>
+        ${bodyRowsHtml}
+        <tr class="total-row">
+          <td colspan="4">Total :-</td>
+          ${totalRowCells}
+          <td>${grandTotal}</td>
+          <td colspan="2"></td>
+        </tr>
+      </table>
+      <div class="remarks">Remarks: ____________________________________________</div>
+      <div class="challan-sign">
+        <div>Prepared By</div>
+        <div>Received By</div>
+        <div>Authorized By</div>
+      </div>
+    </div>
+  `;
+}
+
+function openPrintHtml(html){
+  const overlay = document.getElementById('print-overlay');
+  document.getElementById('print-area').innerHTML = html;
+  overlay.classList.add('show');
+}
+
+function openPrintChallan(challan){
+  const single = buildChallanHtml(challan);
+  openPrintHtml(`<div class="challan-page">${single}${single}</div>`);
+}
+
+/* ---------- TAB: FILE SHEET (size matrix — sizes across top, countries down, grouped by PO) ---------- */
+function ordersByFileGroupedByPo(fileNumber){
+  const list = ORDERS.filter(o=>o.fileNumber===fileNumber).sort((a,b)=>a.createdAt-b.createdAt);
+  const poOrder = [];
+  const byPo = {};
+  list.forEach(o=>{
+    if(!byPo[o.po]){ byPo[o.po]=[]; poOrder.push(o.po); }
+    byPo[o.po].push(o);
+  });
+  return {poOrder, byPo};
+}
+
+function buildFileSheetHtml(fileNumber){
+  const {poOrder, byPo} = ordersByFileGroupedByPo(fileNumber);
+  if(poOrder.length===0) return '';
+  const blocks = poOrder.map(po=>{
+    const orders = byPo[po];
+    const sizeSet = [];
+    orders.forEach(o=> o.sizes.forEach(s=>{ if(!sizeSet.includes(s.size)) sizeSet.push(s.size); }));
+    sizeSet.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
+    const color = orders.find(o=>o.color)?.color || '';
+
+    // group countries by Cutting Date — same date = one section together, like the excel sheet
+    const dateOrder = [];
+    const byDate = {};
+    orders.forEach(o=>{
+      if(!byDate[o.date]){ byDate[o.date]=[]; dateOrder.push(o.date); }
+      byDate[o.date].push(o);
+    });
+    dateOrder.sort();
+
+    const grandColTotals = {}; sizeSet.forEach(s=>grandColTotals[s]=0);
+    let grand = 0;
+
+    const dateSectionsHtml = dateOrder.map(date=>{
+      const dateOrders = byDate[date];
+      const colTotals = {}; sizeSet.forEach(s=>colTotals[s]=0);
+      let dateTotal = 0;
+      const rows = dateOrders.map(o=>{
+        const bySize={}; o.sizes.forEach(s=>bySize[s.size]=Number(s.qty));
+        let rowTotal=0;
+        const cells = sizeSet.map(sz=>{
+          const q = bySize[sz]||0; rowTotal+=q; colTotals[sz]+=q; grandColTotals[sz]+=q;
+          return `<td>${q>0?q:'-'}</td>`;
+        }).join('');
+        dateTotal += rowTotal;
+        const isMii = o.origin==='MADE IN INDIA';
+        const originTag = isMii ? ' (MADE IN INDIA)' : '';
+        return `<tr class="${isMii?'mii-row':''}"><td style="text-align:left;font-weight:800;">${escapeHtml(o.country)}${escapeHtml(originTag)}</td>${cells}<td><b>${rowTotal}</b></td></tr>`;
+      }).join('');
+      grand += dateTotal;
+      const subtotalCells = sizeSet.map(sz=>`<td>${colTotals[sz]}</td>`).join('');
+      return `
+        <tr class="date-sep"><td colspan="${sizeSet.length+2}">Cutting Date: ${escapeHtml(date)}</td></tr>
+        ${rows}
+        <tr class="total-row"><td>TOTAL</td>${subtotalCells}<td>${dateTotal}</td></tr>
+      `;
+    }).join('');
+
+    const grandCells = sizeSet.map(sz=>`<td>${grandColTotals[sz]}</td>`).join('');
+    return `
+      <div class="sheet-block">
+        <div class="sheet-block-head">
+          <span>PO: ${escapeHtml(po)}</span>
+          <span>Color: ${escapeHtml(color||'-')}</span>
+          <span>Total Qty: ${grand}</span>
+        </div>
+        <table class="sheet-table">
+          <tr><th>Country</th>${sizeSet.map(sz=>`<th>${escapeHtml(String(sz))}</th>`).join('')}<th>Total</th></tr>
+          ${dateSectionsHtml}
+          <tr class="grand-total-row"><td>GRAND TOTAL</td>${grandCells}<td>${grand}</td></tr>
+        </table>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="sheet-doc">
+      <p class="co-name">${escapeHtml(COMPANY.name)}</p>
+      <p class="co-addr">${escapeHtml(COMPANY.addr)}</p>
+      <div class="sheet-file-title">FILE NO - ${escapeHtml(fileNumber)}</div>
+      ${blocks}
+    </div>
+  `;
+}
+
+function renderFileSheet(){
+  const c = document.getElementById('content');
+  const fileNumbers = [...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].sort();
+  c.innerHTML = `
+    <h2 class="section-title">File Sheet — Size Matrix View</h2>
+    <label>File Number</label>
+    <input type="text" id="fs-file" placeholder="File number daalein" list="fs-file-list">
+    <datalist id="fs-file-list">${fileNumbers.map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist>
+    <div id="fs-print-btn-wrap"></div>
+    <div id="fs-container" style="margin-top:16px;"></div>
+  `;
+  const container = document.getElementById('fs-container');
+  const btnWrap = document.getElementById('fs-print-btn-wrap');
+  document.getElementById('fs-file').oninput = (e)=>{
+    const fn = e.target.value.trim();
+    if(!fn){ container.innerHTML=''; btnWrap.innerHTML=''; return; }
+    const html = buildFileSheetHtml(fn);
+    if(!html){
+      container.innerHTML = '<div class="empty">Is File Number ke under koi order nahi mila.</div>';
+      btnWrap.innerHTML = '';
+      return;
+    }
+    container.innerHTML = html;
+    btnWrap.innerHTML = `<button type="button" class="btn-primary" id="fs-print-btn" style="margin-top:14px;">Is File Sheet Ko Print Karein</button>`;
+    document.getElementById('fs-print-btn').onclick = ()=> openPrintHtml(buildFileSheetHtml(fn));
+  };
+}
+
+/* ---------- TAB: CHALLANS (history) ---------- */
+function renderChallans(){
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <h2 class="section-title">Sab Challans</h2>
+    <div class="filters">
+      <input type="text" id="ch-filt-file" placeholder="File Number search">
+      <input type="text" id="ch-filt-po" placeholder="PO Number search">
+      <input type="date" id="ch-filt-date">
+    </div>
+    <div id="challans-container"></div>
+  `;
+  const draw = ()=>{
+    const ff = document.getElementById('ch-filt-file').value.trim().toLowerCase();
+    const fp = document.getElementById('ch-filt-po').value.trim().toLowerCase();
+    const fd = document.getElementById('ch-filt-date').value;
+    let list = CHALLANS.filter(ch=>{
+      if(ff && !ch.fileNumber.toLowerCase().includes(ff)) return false;
+      if(fp && !ch.po.toLowerCase().includes(fp)) return false;
+      if(fd && ch.date !== fd) return false;
+      return true;
+    }).sort((a,b)=> b.createdAt - a.createdAt);
+    const cont = document.getElementById('challans-container');
+    if(list.length===0){ cont.innerHTML = '<div class="empty">Abhi tak koi challan nahi bana.</div>'; return; }
+    cont.innerHTML = list.map(ch=>{
+      const totalQty = ch.rows.reduce((s,r)=>s+Number(r.qty),0);
+      const countries = [...new Set(ch.rows.map(r=>r.country))].join(', ');
+      return `
+        <div class="challan-card">
+          <div>
+            <div class="cno">Challan No: ${escapeHtml(ch.challanNo)} — ${ch.date}</div>
+            <div class="cmeta">File ${escapeHtml(ch.fileNumber)} — PO ${escapeHtml(ch.po)} — Countries: ${escapeHtml(countries)} — ${totalQty} pcs</div>
+          </div>
+          <button type="button" class="print-btn" data-id="${ch.id}">Print / Reprint</button>
+        </div>
+      `;
+    }).join('');
+    cont.querySelectorAll('.print-btn').forEach(btn=>{
+      btn.onclick = ()=>{
+        const ch = CHALLANS.find(x=>x.id===btn.dataset.id);
+        if(ch) openPrintChallan(ch);
+      };
+    });
+  };
+  document.getElementById('ch-filt-file').oninput = draw;
+  document.getElementById('ch-filt-po').oninput = draw;
+  document.getElementById('ch-filt-date').oninput = draw;
+  draw();
+}
+
+/* ---------- TAB: SETTINGS ---------- */
+function renderSettings(){
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <h2 class="section-title">Challan Ki Company Details</h2>
+    <label>Company Name</label>
+    <input type="text" id="s-name" value="${escapeHtml(COMPANY.name)}">
+    <label>Address</label>
+    <input type="text" id="s-addr" value="${escapeHtml(COMPANY.addr)}">
+    <label>GSTIN</label>
+    <input type="text" id="s-gst" value="${escapeHtml(COMPANY.gst)}">
+    <label>Default "Issued To"</label>
+    <input type="text" id="s-issued" value="${escapeHtml(COMPANY.issuedTo)}">
+    <button type="button" class="btn-primary" id="s-save-btn">Settings Save Karein</button>
+    <div class="msg" id="s-msg"></div>
+    <label style="margin-top:24px;">Agla Challan Number</label>
+    <div class="ticket-meta" style="font-size:13px;">Ab tak ${CHALLAN_COUNTER} challan ban chuke hain, agla challan number hoga: <b>${String(CHALLAN_COUNTER+1).padStart(4,'0')}</b></div>
+
+    <label style="margin-top:24px;">Trial Ke Liye Sample Data</label>
+    <button type="button" class="add-size-btn" id="seed-btn" style="width:100%;">File 8850 — 2 PO / 5 Country Sample Orders Add Karein</button>
+    <div class="msg" id="seed-msg"></div>
+  `;
+  document.getElementById('seed-btn').onclick = async ()=>{
+    const seedMsg = document.getElementById('seed-msg');
+    const added = await seedTrialData();
+    seedMsg.textContent = added ? 'Sample orders add ho gaye — "Cutting Issue" tab me File Number 8850 daal ke try karein.' : 'Sample orders pehle se maujood hain.';
+    seedMsg.className = 'msg show';
+  };
+  document.getElementById('s-save-btn').onclick = async ()=>{
+    COMPANY.name = document.getElementById('s-name').value.trim();
+    COMPANY.addr = document.getElementById('s-addr').value.trim();
+    COMPANY.gst = document.getElementById('s-gst').value.trim();
+    COMPANY.issuedTo = document.getElementById('s-issued').value.trim();
+    await saveCompany();
+    const msg = document.getElementById('s-msg');
+    msg.textContent = 'Settings save ho gayi.';
+    msg.className = 'msg show';
+  };
+}
+
+/* ---------- TRIAL SAMPLE DATA ---------- */
+function sampleTrialOrders(){
+  return [
+    {id:uid(), fileNumber:'8850', po:'675857-8713', country:'DE', origin:'COMMON', date:'2026-08-11', color:'Dark Red', sizes:[{size:'140',qty:87}], createdAt:Date.now()},
+    {id:uid(), fileNumber:'8850', po:'675857-8713', country:'BE', origin:'COMMON', date:'2026-08-11', color:'Dark Red', sizes:[{size:'140',qty:61},{size:'146',qty:55}], createdAt:Date.now()+1},
+    {id:uid(), fileNumber:'8850', po:'675857-8713', country:'GB', origin:'COMMON', date:'2026-08-15', color:'Dark Red', sizes:[{size:'146',qty:149}], createdAt:Date.now()+2},
+    {id:uid(), fileNumber:'8850', po:'675857-8713', country:'ME', origin:'COMMON', date:'2026-08-20', color:'Dark Red', sizes:[{size:'146',qty:22},{size:'170',qty:35}], createdAt:Date.now()+3},
+    {id:uid(), fileNumber:'8850', po:'675857-8713', country:'IN', origin:'MADE IN INDIA', date:'2026-08-20', color:'Dark Red', sizes:[{size:'140',qty:40},{size:'146',qty:30}], createdAt:Date.now()+4},
+    {id:uid(), fileNumber:'8850', po:'676176-8713', country:'EN', origin:'COMMON', date:'2026-08-11', color:'Dark Red', sizes:[{size:'146',qty:31},{size:'170',qty:85}], createdAt:Date.now()+5}
+  ];
+}
+async function seedTrialData(){
+  const already = ORDERS.some(o=>o.fileNumber==='8850' && o.po==='675857-8713' && o.country==='DE');
+  if(already){ return await seedMiiExample(); }
+  ORDERS = ORDERS.concat(sampleTrialOrders());
+  await saveOrders();
+  return true;
+}
+async function seedMiiExample(){
+  const already = ORDERS.some(o=>o.fileNumber==='8850' && o.po==='675857-8713' && o.country==='IN' && o.origin==='MADE IN INDIA');
+  if(already) return false;
+  ORDERS.push({id:uid(), fileNumber:'8850', po:'675857-8713', country:'IN', origin:'MADE IN INDIA', date:'2026-08-20', color:'Dark Red', sizes:[{size:'140',qty:40},{size:'146',qty:30}], createdAt:Date.now()});
+  await saveOrders();
+  return true;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+const renderers = { new: renderNew, list: renderList, filesheet: renderFileSheet, cut: renderCut, date: renderDate, challans: renderChallans, settings: renderSettings };
+
+function bindTabs(){
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.onclick = ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      renderers[tab.dataset.tab]();
+    };
+  });
+}
+
+function bindPrintOverlay(){
+  document.getElementById('do-print-btn').onclick = ()=> window.print();
+  document.getElementById('close-print-btn').onclick = ()=>{
+    document.getElementById('print-overlay').classList.remove('show');
+  };
+}
+
+(async function init(){
+  bindTabs();
+  bindPrintOverlay();
+  await loadAll();
+  if(ORDERS.length===0){ await seedTrialData(); }
+  else { await seedMiiExample(); }
+  renderNew();
+})();
+</script>
+</body>
+</html>

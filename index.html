@@ -2106,6 +2106,37 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0377eZCwmC4N0OEH1HVfpw_cX4nPR3a
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 (function(){
+  // Handle Supabase password-recovery links on the same site.
+  // When a recovery session is detected, show a simple password update form.
+  const recoveryBox = document.createElement('div');
+  recoveryBox.id = 'password-recovery-box';
+  recoveryBox.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);';
+  recoveryBox.innerHTML = `
+    <div style="width:min(420px,100%);background:#fff;border-radius:22px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.2);font-family:inherit">
+      <h2 style="margin:0 0 8px;font-size:24px">Set new password</h2>
+      <p style="margin:0 0 18px;color:#666;font-size:14px">Set a new password for your Cutting account.</p>
+      <input id="recovery-pass" type="password" placeholder="New password" style="width:100%;box-sizing:border-box;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:10px">
+      <input id="recovery-pass2" type="password" placeholder="Confirm password" style="width:100%;box-sizing:border-box;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:10px">
+      <div id="recovery-msg" style="min-height:20px;color:#D70015;font-weight:700;font-size:13px;margin-bottom:10px"></div>
+      <button id="recovery-save" style="width:100%;padding:14px;border:0;border-radius:12px;background:#D70015;color:#fff;font-size:16px;font-weight:800">Update password</button>
+    </div>`;
+  document.body.appendChild(recoveryBox);
+
+  const showRecovery = ()=>{ recoveryBox.style.display='flex'; };
+  const saveRecovery = async ()=>{
+    const a=document.getElementById('recovery-pass').value;
+    const b=document.getElementById('recovery-pass2').value;
+    const msg=document.getElementById('recovery-msg');
+    if(a.length < 8){ msg.textContent='Password must be at least 8 characters.'; return; }
+    if(a!==b){ msg.textContent='Passwords do not match.'; return; }
+    msg.style.color='#666'; msg.textContent='Updating...';
+    const {error}=await sb.auth.updateUser({password:a});
+    if(error){ msg.style.color='#D70015'; msg.textContent=error.message; return; }
+    msg.style.color='#188038'; msg.textContent='Password updated. You can now sign in.';
+    setTimeout(async()=>{ await sb.auth.signOut(); location.reload(); },700);
+  };
+  document.addEventListener('click', e=>{ if(e.target.id==='recovery-save') saveRecovery(); });
+
   const AUTH_EMAIL = 'inadeemx@gmail.com';
   const AUTH_LOGIN_ID = 'inadeemx';
   const CUTTING_AUTH_EMAIL = 'nadeemansaries@gmail.com';
@@ -2167,6 +2198,17 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     if(data && data.session) enter();
     else idEl.focus();
   });
+
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'PASSWORD_RECOVERY' && session){
+      showRecovery();
+    }
+  });
+
+  // Also handle recovery links where the event fires before the listener above.
+  if(location.hash.includes('type=recovery')){
+    setTimeout(()=>showRecovery(), 250);
+  }
 })();
 
 </script>

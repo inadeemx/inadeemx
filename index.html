@@ -643,6 +643,8 @@ function orderStatus(order){
   return {label:'In Progress', cls:'status-progress', done, target};
 }
 
+function colorKey(c){ return String(c||'').trim().toLowerCase(); }
+
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -1043,12 +1045,14 @@ function buildFileBlockHtml(fileNumber, ordersForFile, editable){
   const poOrder = [];
   const byPo = {};
   ordersForFile.slice().sort((a,b)=>a.createdAt-b.createdAt).forEach(o=>{
-    if(!byPo[o.po]){ byPo[o.po]=[]; poOrder.push(o.po); }
-    byPo[o.po].push(o);
+    const key = o.po + '\u0001' + colorKey(o.color);
+    if(!byPo[key]){ byPo[key]=[]; poOrder.push(key); }
+    byPo[key].push(o);
   });
 
-  const poBlocks = poOrder.map(po=>{
-    const orders = byPo[po];
+  const poBlocks = poOrder.map(poKey=>{
+    const orders = byPo[poKey];
+    const po = orders[0].po;
     const sizeSet = [];
     orders.forEach(o=> o.sizes.forEach(s=>{ if(!sizeSet.includes(s.size)) sizeSet.push(s.size); }));
     sizeSet.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
@@ -1270,14 +1274,25 @@ function renderList(){
 
 /* ---------- TAB: CUTTING ISSUE ENTRY ---------- */
 // Given a fileNumber (and optional origin filter), sorted list of orders (POs) in that file, earliest cutting date first.
-function ordersInFile(fileNumber, origin){
-  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin))
+function ordersInFile(fileNumber, origin, color){
+  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin)
+      && (color===undefined || colorKey(o.color)===colorKey(color)))
     .sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
 }
 
-// Allocate an entered qty (per size) across the file's POs matching the given Origin, earliest cutting date first.
-function allocateForFile(fileNumber, sizeQtyMap, origin){
-  const list = ordersInFile(fileNumber, origin);
+// All colours present in a file (for the chosen Origin), in order of first appearance.
+function colorsInFile(fileNumber, origin){
+  const seen = new Set(); const out = [];
+  ordersInFile(fileNumber, origin).forEach(o=>{
+    const k = colorKey(o.color);
+    if(!seen.has(k)){ seen.add(k); out.push((o.color||'').trim()); }
+  });
+  return out;
+}
+
+// Allocate an entered qty (per size) across the file's POs matching the given Origin and Colour, earliest cutting date first.
+function allocateForFile(fileNumber, sizeQtyMap, origin, color){
+  const list = ordersInFile(fileNumber, origin, color);
   const result = [];
   for(const size in sizeQtyMap){
     let remaining = Number(sizeQtyMap[size]);
@@ -1291,7 +1306,7 @@ function allocateForFile(fileNumber, sizeQtyMap, origin){
       const need = sizeEntry.qty - issued;
       if(need<=0) continue;
       const give = Math.min(need, remaining);
-      allocations.push({orderId:order.id, po:order.po, country:order.country, date:order.date, qty:give});
+      allocations.push({orderId:order.id, po:order.po, country:order.country, color:order.color||'', date:order.date, qty:give});
       remaining -= give;
     }
     result.push({size, allocations, unallocated: remaining});
@@ -1337,10 +1352,10 @@ function renderCut(){
     `;
     const formBox = document.getElementById('cf-form');
 
-    function renderDynamic(fileNumber, origin, dynamicBox){
-      const list = ordersInFile(fileNumber, origin);
+    function renderDynamic(fileNumber, origin, color, dynamicBox){
+      const list = ordersInFile(fileNumber, origin, color);
       if(list.length===0){
-        dynamicBox.innerHTML = '<div class="empty">No orders found in this File Number for the selected Origin.</div>';
+        dynamicBox.innerHTML = '<div class="empty">No orders found in this File Number for the selected Origin / Colour.</div>';
         return;
       }
       const sizeSet = [];
@@ -1378,7 +1393,7 @@ function renderCut(){
         });
         if(Object.keys(sizeQtyMap).length===0){ msg.textContent='Please enter quantity for at least one size.'; msg.className='msg err show'; resultBox.innerHTML=''; return; }
 
-        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin);
+        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin, color);
 
         // group allocations by orderId to create cutting entries
         const byOrder = {};
@@ -1439,13 +1454,13 @@ function renderCut(){
         // build result summary
         const summaryHtml = allocationResult.map(r=>{
           const allocLines = r.allocations.map(a=>
-            `<div>→ <b>${a.qty} pcs</b> allocated to PO <b>${escapeHtml(a.po)}</b> / <b>${escapeHtml(a.country)}</b> (cutting date ${a.date})</div>`
+            `<div>→ <b>${a.qty} pcs</b> allocated to PO <b>${escapeHtml(a.po)}</b> / <b>${escapeHtml(a.country)}</b>${a.color?' / '+escapeHtml(a.color):''} (cutting date ${a.date})</div>`
           ).join('');
           return `
             <div style="margin-bottom:10px;">
               <div style="font-weight:900;">Size ${escapeHtml(String(r.size))}:</div>
               ${allocLines || '<div>No PO had remaining requirement.</div>'}
-              ${r.unallocated>0 ? `<div style="color:var(--red);font-weight:800;">⚠ ${r.unallocated} pcs could not be allocated — all matching POs in this file are already complete for size ${escapeHtml(String(r.size))}.</div>` : ''}
+              ${r.unallocated>0 ? `<div style="color:var(--red);font-weight:800;">⚠ ${r.unallocated} pcs could not be allocated — all matching POs of this colour in this file are already complete for size ${escapeHtml(String(r.size))}.</div>` : ''}
             </div>
           `;
         }).join('');
@@ -1488,12 +1503,21 @@ function renderCut(){
           <option value="COMMON">Common</option>
           <option value="MADE IN INDIA">Made In India</option>
         </select>
+        <label>Colour</label>
+        <select id="cf-color"></select>
         <div id="cf-dynamic"></div>
       `;
       const dynamicBox = document.getElementById('cf-dynamic');
       const originSelect = document.getElementById('cf-origin');
-      renderDynamic(fileNumber, originSelect.value, dynamicBox);
-      originSelect.onchange = ()=> renderDynamic(fileNumber, originSelect.value, dynamicBox);
+      const colorSelect = document.getElementById('cf-color');
+      const fillColors = ()=>{
+        const cols = colorsInFile(fileNumber, originSelect.value);
+        colorSelect.innerHTML = cols.map(cl=>`<option value="${escapeHtml(cl)}">${cl ? escapeHtml(cl) : '(No Colour)'}</option>`).join('');
+      };
+      const drawDyn = ()=> renderDynamic(fileNumber, originSelect.value, colorSelect.value, dynamicBox);
+      fillColors(); drawDyn();
+      originSelect.onchange = ()=>{ fillColors(); drawDyn(); };
+      colorSelect.onchange = drawDyn;
     }
 
     const fileInput = document.getElementById('cf-file');
@@ -1514,23 +1538,33 @@ function renderCut(){
     const sizeSet = [];
     challan.rows.forEach(r=>{ if(!sizeSet.includes(r.size)) sizeSet.push(r.size); });
     sizeSet.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
-    const byCountry = {}; const countryOrder = [];
+    const byGroup = {}; const groupOrder = [];
     challan.rows.forEach(r=>{
-      if(!byCountry[r.country]){ byCountry[r.country]=[]; countryOrder.push(r.country); }
-      byCountry[r.country].push(r);
+      const key = `${r.country}\u0001${r.origin||'COMMON'}\u0001${colorKey(r.color)}`;
+      if(!byGroup[key]){ byGroup[key]=[]; groupOrder.push(key); }
+      byGroup[key].push(r);
     });
 
-    const rowsHtml = countryOrder.map(country=>{
-      const list = byCountry[country];
+    const rowsHtml = groupOrder.map(groupKey=>{
+      const list = byGroup[groupKey];
+      const country = list[0].country;
+      const origin = list[0].origin || 'COMMON';
+      const color = list[0].color || '';
       const bySize = {}; list.forEach(r=>bySize[r.size]=r.qty);
       const boxes = sizeSet.map(sz=>`
         <div class="size-box">
           <span class="cf-label">${escapeHtml(String(sz))}</span>
-          <input type="number" class="edit-qty-input" data-country="${escapeHtml(country)}" data-size="${escapeHtml(String(sz))}" value="${bySize[sz]!==undefined ? bySize[sz] : ''}" min="0">
+          <input type="number" class="edit-qty-input"
+            data-country="${escapeHtml(country)}"
+            data-origin="${escapeHtml(origin)}"
+            data-color="${escapeHtml(color)}"
+            data-size="${escapeHtml(String(sz))}"
+            value="${bySize[sz]!==undefined ? bySize[sz] : ''}" min="0">
         </div>
       `).join('');
-      const originLabel = list[0].origin==='MADE IN INDIA' ? ' — Made In India' : '';
-      return `<div style="margin-bottom:14px;"><label>${escapeHtml(country)}${originLabel}</label><div class="size-box-wrap">${boxes}</div></div>`;
+      const originLabel = origin==='MADE IN INDIA' ? ' — Made In India' : '';
+      const colorLabel = color ? ` — Colour: ${escapeHtml(color)}` : ' — Colour: (No Colour)';
+      return `<div style="margin-bottom:14px;"><label>${escapeHtml(country)}${originLabel}${colorLabel}</label><div class="size-box-wrap">${boxes}</div></div>`;
     }).join('');
 
     bodyBox.innerHTML = `
@@ -1558,8 +1592,9 @@ function renderCut(){
         const qty = Number(v);
         if(v!=='' && qty>0){
           const country = inp.dataset.country;
-          const meta = byCountry[country][0];
-          newRows.push({country, origin:meta.origin, size:inp.dataset.size, qty, color:meta.color});
+          const origin = inp.dataset.origin || 'COMMON';
+          const color = inp.dataset.color || '';
+          newRows.push({country, origin, size:inp.dataset.size, qty, color});
         }
       });
       challan.rows = newRows;
@@ -1569,7 +1604,7 @@ function renderCut(){
       ENTRIES = ENTRIES.filter(e=> e.challanId !== challan.id);
       const grouped = {};
       newRows.forEach(r=>{
-        const order = ORDERS.find(o=> o.fileNumber===challan.fileNumber && o.po===challan.po && o.country===r.country);
+        const order = ORDERS.find(o=> o.fileNumber===challan.fileNumber && o.po===challan.po && o.country===r.country && colorKey(o.color)===colorKey(r.color));
         if(!order) return;
         if(!grouped[order.id]) grouped[order.id]=[];
         grouped[order.id].push({size:r.size, qty:r.qty});
@@ -1607,12 +1642,15 @@ function buildIssuedCuttingHtml(fileNumber){
   const poOrder = [];
   const byPo = {};
   list.slice().sort((a,b)=>a.createdAt-b.createdAt).forEach(o=>{
-    if(!byPo[o.po]){ byPo[o.po]=[]; poOrder.push(o.po); }
-    byPo[o.po].push(o);
+    const key = o.po + '\u0001' + colorKey(o.color);
+    if(!byPo[key]){ byPo[key]=[]; poOrder.push(key); }
+    byPo[key].push(o);
   });
 
-  const poBlocks = poOrder.map(po=>{
-    const orders = byPo[po];
+  const poBlocks = poOrder.map(poKey=>{
+    const orders = byPo[poKey];
+    const po = orders[0].po;
+    const poColor = orders.find(o=>o.color)?.color || '';
     const sizeSet = [];
     orders.forEach(o=> o.sizes.forEach(s=>{ if(!sizeSet.includes(s.size)) sizeSet.push(s.size); }));
     sizeSet.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
@@ -1636,7 +1674,7 @@ function buildIssuedCuttingHtml(fileNumber){
 
     return `
       <div class="issued-po-block">
-        <div class="issued-po-title">(${escapeHtml(po)})</div>
+        <div class="issued-po-title">(${escapeHtml(po)})${poColor ? ' — ' + escapeHtml(poColor) : ''}</div>
         <table class="issued-table">
           <tr><th>&nbsp;</th>${sizeHeadHtml}<th>Total</th></tr>
           <tr class="row-common"><td>Common</td>${commonCells}<td><b>${commonRowTotal}</b></td></tr>
@@ -2029,8 +2067,8 @@ async function startApp(){
   const theme = await loadTheme();
   applyTheme(theme);
   await loadAll();
-  if(ORDERS.length===0){ await seedTrialData(); }
-  else { await seedMiiExample(); }
+  // Production mode: never add sample/trial data automatically.
+  // Existing Supabase data is loaded exactly as stored.
   setHeader('dashboard');
   renderDashboard();
 }

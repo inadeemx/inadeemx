@@ -471,6 +471,8 @@
   }
   .login-btn:active{transform:scale(.97);filter:brightness(.93);}
   .login-foot{margin-top:18px;text-align:center;font-size:12px;font-weight:700;color:#000;opacity:.45;}
+.role-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:6px 10px;border-radius:999px;background:#F2F2F7;color:#555;font-size:11px;font-weight:800;}
+.role-cutting .role-badge{background:#FFF0EE;color:#D70015;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -518,6 +520,7 @@
 
   <div class="main">
     <header class="topbar">
+      <div class="role-badge" id="role-badge">Admin</div>
       <div>
         <h1 id="page-title">Dashboard</h1>
         <p class="subtitle" id="page-subtitle">Overview of your cutting operations</p>
@@ -554,6 +557,12 @@ let COMPANY = {
   issuedTo: 'Prod unit-C-66 - Sect-57'
 };
 let ready = false;
+let CURRENT_ROLE = 'admin';
+const CUTTING_EMAIL = 'nadeemansaries@gmail.com';
+const ROLE_ACCESS = {
+  admin: ['dashboard','new','list','cut','issued','date','challans','settings'],
+  cutting: ['cut','issued']
+};
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -575,7 +584,8 @@ async function loadAll(){
   const user = await getCurrentUser();
   if(!user){ ready = false; return; }
   try{
-    const { data, error } = await sb.from('app_data').select('key,data').eq('user_id', user.id);
+    // All authenticated users work on the same company data.
+    const { data, error } = await sb.from('app_data').select('key,data');
     if(error) throw error;
     const map = Object.fromEntries((data || []).map(r => [r.key, r.data]));
     ORDERS = Array.isArray(map['orders-data']) ? map['orders-data'] : [];
@@ -594,9 +604,11 @@ async function loadAll(){
 async function saveAppData(key, data){
   const user = await getCurrentUser();
   if(!user) throw new Error('Not authenticated');
+  // Shared company data: user_id is intentionally null so all authenticated
+  // staff accounts use the same ERP dataset. RLS must allow authenticated access.
   const { error } = await sb.from('app_data').upsert({
     key,
-    user_id: user.id,
+    user_id: null,
     data,
     updated_at: new Date().toISOString()
   }, { onConflict: 'key' });
@@ -1998,6 +2010,12 @@ function setHeader(name){
 }
 
 function switchTab(name){
+  const allowed = ROLE_ACCESS[CURRENT_ROLE] || ROLE_ACCESS.admin;
+  if(!allowed.includes(name)){
+    const fallback = CURRENT_ROLE === 'cutting' ? 'cut' : 'dashboard';
+    if(name !== fallback){ switchTab(fallback); }
+    return;
+  }
   document.querySelectorAll('.nav-item[data-tab]').forEach(t=> t.classList.toggle('active', t.dataset.tab===name));
   setHeader(name);
   renderers[name]();
@@ -2019,9 +2037,7 @@ function bindPrintOverlay(){
 /* ---------- Theme (light/dark) ---------- */
 async function loadTheme(){
   try{
-    const user = await getCurrentUser();
-    if(!user) return 'light';
-    const { data, error } = await sb.from('app_data').select('data').eq('user_id', user.id).eq('key', 'ui-theme-pref').maybeSingle();
+    const { data, error } = await sb.from('app_data').select('data').eq('key', 'ui-theme-pref').maybeSingle();
     if(error) throw error;
     return data && data.data && data.data.theme ? data.data.theme : 'light';
   }catch(e){ return 'light'; }
@@ -2060,6 +2076,16 @@ function bindGlobalSearch(){
 }
 
 async function startApp(){
+  const user = await getCurrentUser();
+  CURRENT_ROLE = (user && user.app_metadata && user.app_metadata.role === 'cutting') ? 'cutting' : 'admin';
+  document.body.classList.toggle('role-cutting', CURRENT_ROLE === 'cutting');
+  const roleBadge = document.getElementById('role-badge');
+  if(roleBadge) roleBadge.textContent = CURRENT_ROLE === 'cutting' ? 'Cutting' : 'Admin';
+  document.querySelectorAll('.nav-item[data-tab]').forEach(t=>{
+    const tab = t.dataset.tab;
+    const allowed = (ROLE_ACCESS[CURRENT_ROLE] || ROLE_ACCESS.admin).includes(tab);
+    t.style.display = allowed ? '' : 'none';
+  });
   bindTabs();
   bindPrintOverlay();
   bindThemeToggle();
@@ -2069,8 +2095,9 @@ async function startApp(){
   await loadAll();
   // Production mode: never add sample/trial data automatically.
   // Existing Supabase data is loaded exactly as stored.
-  setHeader('dashboard');
-  renderDashboard();
+  const firstTab = CURRENT_ROLE === 'cutting' ? 'cut' : 'dashboard';
+  setHeader(firstTab);
+  renderers[firstTab]();
 }
 
 /* ---------- Supabase setup + Login gate ---------- */
@@ -2081,6 +2108,8 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 (function(){
   const AUTH_EMAIL = 'inadeemx@gmail.com';
   const AUTH_LOGIN_ID = 'inadeemx';
+  const CUTTING_AUTH_EMAIL = 'nadeemansaries@gmail.com';
+  const CUTTING_LOGIN_ID = 'cutting';
   const screen = document.getElementById('login-screen');
   document.getElementById('top-avatar-img').src = document.querySelector('.login-avatar img').src;
   const idEl = document.getElementById('login-id');
@@ -2097,7 +2126,11 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   async function tryLogin(){
     const entered = idEl.value.trim();
-    const email = entered.includes('@') ? entered : (entered.toLowerCase() === AUTH_LOGIN_ID ? AUTH_EMAIL : entered);
+    const enteredId = entered.toLowerCase();
+    const email = entered.includes('@') ? entered : (
+      enteredId === AUTH_LOGIN_ID ? AUTH_EMAIL :
+      enteredId === CUTTING_LOGIN_ID ? CUTTING_AUTH_EMAIL : entered
+    );
     const password = pwEl.value;
     if(!email || !password){
       errEl.textContent = 'Enter Login ID/Email and Password';

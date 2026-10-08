@@ -1,16 +1,15 @@
-## Hi there 👋
+We’ll Be Back Soon
 
-<!--
-**inadeemx/inadeemx** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Website Temporarily Unavailable
 
-Here are some ideas to get you started:
+We’re currently performing scheduled maintenance and making a few improvements to provide you with a better experience.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+Our website will be back online shortly.
+
+Thank you for your patience.
+
+⸻
+
+⏳ Maintenance in Progress
+
+Please try again after some time.

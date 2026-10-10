@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cutting Issue Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style id="login-bg">/* Login background photo (embedded so there is no extra file to deploy) */
+:root{--lg-bg-image:url("data:image/jpeg;base64,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");}</style>
 <style>
   :root{
     --bg:#F5F4F5;
@@ -214,21 +219,180 @@
   .print-toolbar button:hover{opacity:0.85;}
   .print-toolbar button.close-btn{background:var(--ink);color:var(--paper);}
 
-  /* Login screen */
+  /* ---------- Login screen (H&M Traceability) ----------
+     Self-contained: uses its own tokens so the app's light/dark theme never changes its look.
+     Background photo is defined as --lg-bg-image in the <style id="login-bg"> block in <head>. */
   .login-screen{
-    position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;
-    z-index:500;padding:20px;transition:background var(--t);
+    --lg-burgundy:#7A263A; --lg-burgundy-deep:#5D1B2D; --lg-charcoal:#252525; --lg-warm:#FCFBF8;
+    --lg-grey:#8A8A8A; --lg-soft:#6A6562; --lg-border:#E7E2DF; --lg-error:#B42318;
+    --lg-ease:200ms cubic-bezier(.4,0,.2,1);
+    position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;
+    overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    color:var(--lg-charcoal);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background-color:#F3F1EE;
+    background-image:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,.14)),var(--lg-bg-image);
+    background-size:cover;background-position:center;background-repeat:no-repeat;
   }
-  .login-card{
-    width:100%;max-width:360px;background:var(--paper);border:1px solid var(--border);border-radius:var(--radius-card);
-    padding:34px 28px;box-shadow:var(--shadow-hover);
-    animation:loginIn 280ms cubic-bezier(.22,.8,.25,1);
+  /* Portrait screens: shift the crop right so the burgundy notebook stays in frame */
+  @media (max-aspect-ratio:1/1){ .login-screen{background-position:86% center;} }
+  .login-screen [hidden]{display:none !important;}
+
+  .login-screen .lg-main{flex:1 0 auto;display:flex;padding:28px 20px 8px;}
+  .login-screen .lg-card{
+    width:100%;max-width:420px;margin:auto;padding:40px 36px 26px;
+    background:rgba(252,251,248,.80);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,.7);border-radius:20px;
+    box-shadow:0 1px 2px rgba(37,37,37,.05),0 18px 48px -16px rgba(70,20,32,.22);
+    animation:lgIn 420ms cubic-bezier(.22,.8,.25,1) both;
   }
-  @keyframes loginIn{from{opacity:0;transform:translateY(12px) scale(0.97);} to{opacity:1;transform:translateY(0) scale(1);}}
-  .login-logo{font-size:21px;font-weight:800;text-align:center;letter-spacing:-0.3px;margin-bottom:4px;color:var(--ink);}
-  .login-logo span{color:var(--grey);font-weight:500;}
-  .login-sub{text-align:center;color:var(--grey);font-size:13px;margin:0 0 20px;font-weight:500;}
-  .login-hint{font-size:11.5px;color:var(--grey);text-align:center;margin-top:16px;line-height:1.6;}
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .login-screen .lg-card{background:rgba(252,251,248,.96);}
+  }
+  @keyframes lgIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  /* Brand */
+  .login-screen .lg-brand{text-align:center;}
+  .login-screen .lg-brand-name{margin:0;display:flex;flex-direction:column;align-items:center;font-weight:400;}
+  .login-screen .lg-hm{
+    font-family:'Playfair Display','Bodoni 72',Didot,Georgia,'Times New Roman',serif;
+    font-weight:700;font-size:48px;line-height:1;letter-spacing:-.015em;color:var(--lg-burgundy-deep);
+  }
+  .login-screen .lg-trace{
+    margin-top:10px;padding-left:.46em;font-size:11.5px;font-weight:600;letter-spacing:.46em;
+    text-transform:uppercase;color:var(--lg-charcoal);
+  }
+  .login-screen .lg-descriptor{
+    margin:14px 0 0;padding-left:.2em;font-size:10.5px;font-weight:500;letter-spacing:.2em;line-height:1.6;
+    text-transform:uppercase;color:var(--lg-soft);text-wrap:balance;
+  }
+
+  /* Welcome */
+  .login-screen .lg-welcome{margin-top:26px;padding-top:26px;border-top:1px solid var(--lg-border);}
+  .login-screen .lg-welcome h2{margin:0;font-size:22px;line-height:1.2;font-weight:650;letter-spacing:-.01em;color:var(--lg-charcoal);}
+  .login-screen .lg-welcome p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--lg-soft);}
+
+  /* Fields */
+  .login-screen .lg-form{margin-top:22px;}
+  .login-screen .lg-field + .lg-field{margin-top:16px;}
+  .login-screen .lg-label{display:block;margin:0 0 7px;font-size:13px;font-weight:600;letter-spacing:0;color:var(--lg-charcoal);}
+  .login-screen .lg-control{position:relative;}
+  .login-screen .lg-icon{
+    position:absolute;left:15px;top:50%;width:18px;height:18px;transform:translateY(-50%);pointer-events:none;
+    fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+    color:var(--lg-grey);transition:color var(--lg-ease);
+  }
+  .login-screen .lg-control:focus-within .lg-icon{color:var(--lg-burgundy);}
+  .login-screen .lg-input{
+    display:block;width:100%;height:52px;padding:0 16px 0 44px;margin:0;
+    font-family:inherit;font-size:16px;font-weight:500;line-height:1.2;color:var(--lg-charcoal);
+    background:rgba(255,255,255,.92);border:1px solid var(--lg-border);border-radius:12px;
+    outline:2px solid transparent;outline-offset:2px;box-shadow:none;
+    transition:border-color var(--lg-ease),box-shadow var(--lg-ease),background-color var(--lg-ease);
+  }
+  .login-screen .lg-input--pw{padding-right:52px;}
+  .login-screen .lg-input::placeholder{color:#7C7773;font-weight:400;opacity:1;}
+  .login-screen .lg-input:hover{border-color:#D3CBC7;}
+  .login-screen .lg-input:focus{background:#fff;border-color:var(--lg-burgundy);box-shadow:0 0 0 4px rgba(122,38,58,.13);}
+  .login-screen .lg-input[aria-invalid="true"]{border-color:var(--lg-error);}
+  .login-screen .lg-input[aria-invalid="true"]:focus{box-shadow:0 0 0 4px rgba(180,35,24,.14);}
+  .login-screen .lg-input:-webkit-autofill{-webkit-box-shadow:0 0 0 40px #fff inset;-webkit-text-fill-color:var(--lg-charcoal);}
+  .login-screen .lg-error{margin:6px 0 0;font-size:12.5px;line-height:1.4;color:var(--lg-error);}
+
+  .login-screen .lg-toggle{
+    position:absolute;right:6px;top:50%;width:40px;height:40px;transform:translateY(-50%);
+    display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:10px;
+    background:transparent;color:var(--lg-grey);cursor:pointer;
+    outline:2px solid transparent;outline-offset:1px;transition:color var(--lg-ease),background-color var(--lg-ease),box-shadow var(--lg-ease);
+  }
+  .login-screen .lg-toggle:hover{color:var(--lg-charcoal);background:rgba(37,37,37,.05);}
+  .login-screen .lg-toggle:focus-visible{color:var(--lg-burgundy);box-shadow:0 0 0 3px rgba(122,38,58,.25);}
+  .login-screen .lg-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .login-screen .lg-toggle .lg-eye-off{display:none;}
+  .login-screen .lg-toggle.is-visible .lg-eye{display:none;}
+  .login-screen .lg-toggle.is-visible .lg-eye-off{display:block;}
+
+  /* Remember me + forgot password */
+  .login-screen .lg-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;margin:6px 0 10px;}
+  .login-screen .lg-check{display:inline-flex;align-items:center;gap:9px;min-height:44px;margin:0;font-size:14px;font-weight:500;letter-spacing:0;color:var(--lg-charcoal);cursor:pointer;user-select:none;}
+  .login-screen .lg-check input{
+    -webkit-appearance:none;appearance:none;display:grid;place-content:center;flex:none;
+    width:18px;height:18px;margin:0;border:1.5px solid #C9C1BC;border-radius:5px;background:#fff;cursor:pointer;
+    outline:2px solid transparent;outline-offset:2px;transition:background-color var(--lg-ease),border-color var(--lg-ease),box-shadow var(--lg-ease);
+  }
+  .login-screen .lg-check input::after{
+    content:"";width:10px;height:10px;background:#fff;transform:scale(0);transition:transform 160ms cubic-bezier(.4,0,.2,1);
+    clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);
+  }
+  .login-screen .lg-check input:checked{background:var(--lg-burgundy);border-color:var(--lg-burgundy);}
+  .login-screen .lg-check input:checked::after{transform:scale(1);}
+  .login-screen .lg-check input:hover{border-color:var(--lg-burgundy);}
+  .login-screen .lg-check input:focus-visible{box-shadow:0 0 0 4px rgba(122,38,58,.22);}
+  .login-screen .lg-link{
+    margin:0;padding:12px 2px;border:0;border-radius:6px;background:none;font:inherit;font-size:14px;font-weight:600;
+    color:var(--lg-burgundy);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;
+    outline:2px solid transparent;outline-offset:1px;transition:color var(--lg-ease),text-decoration-color var(--lg-ease),box-shadow var(--lg-ease);
+  }
+  .login-screen .lg-link:hover{color:var(--lg-burgundy-deep);text-decoration-color:currentColor;}
+  .login-screen .lg-link:focus-visible{box-shadow:0 0 0 3px rgba(122,38,58,.25);}
+
+  /* Message banner (auth errors / notices) */
+  .login-screen .lg-alert{margin:0 0 12px;padding:11px 14px;border-radius:10px;font-size:13.5px;line-height:1.45;border:1px solid transparent;}
+  .login-screen .lg-alert--error{background:#FDF1EF;border-color:#F2CAC5;color:#8A1C14;}
+  .login-screen .lg-alert--info{background:rgba(255,255,255,.7);border-color:var(--lg-border);color:var(--lg-charcoal);}
+
+  /* Primary button */
+  .login-screen .lg-submit{
+    display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:54px;margin:0;padding:0 20px;
+    border:0;border-radius:12px;background:var(--lg-burgundy);color:#fff;cursor:pointer;
+    font-family:inherit;font-size:15px;font-weight:600;line-height:1;letter-spacing:.02em;
+    box-shadow:0 1px 2px rgba(93,27,45,.28);
+    outline:2px solid transparent;outline-offset:3px;
+    transition:background-color var(--lg-ease),box-shadow var(--lg-ease),transform 120ms ease;
+  }
+  .login-screen .lg-submit:hover{background:var(--lg-burgundy-deep);box-shadow:0 10px 22px -10px rgba(93,27,45,.6);}
+  .login-screen .lg-submit:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(93,27,45,.28);}
+  .login-screen .lg-submit:focus-visible{outline-color:var(--lg-burgundy);}
+  .login-screen .lg-arrow{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--lg-ease);}
+  .login-screen .lg-submit:hover .lg-arrow{transform:translateX(3px);}
+  .login-screen .lg-spinner{display:none;width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:lgSpin .8s linear infinite;}
+  @keyframes lgSpin{to{transform:rotate(360deg);}}
+  .login-screen .lg-submit.is-loading{background:var(--lg-burgundy-deep);cursor:progress;pointer-events:none;}
+  .login-screen .lg-submit.is-loading .lg-spinner{display:block;}
+  .login-screen .lg-submit.is-loading .lg-arrow{display:none;}
+
+  /* Card + page footers */
+  .login-screen .lg-secure{
+    display:flex;align-items:center;justify-content:center;gap:8px;margin:22px 0 0;padding-top:18px;
+    border-top:1px solid var(--lg-border);font-size:12.5px;color:var(--lg-soft);
+  }
+  .login-screen .lg-secure svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .login-screen .lg-footer{flex:none;padding:14px 20px 20px;text-align:center;font-size:12px;letter-spacing:.01em;color:#57514E;}
+
+  /* Small screens */
+  @media (max-width:480px){
+    .login-screen .lg-main{padding:20px 14px 6px;}
+    .login-screen .lg-card{padding:30px 22px 20px;border-radius:18px;background:rgba(252,251,248,.76);}
+    .login-screen .lg-hm{font-size:42px;}
+    .login-screen .lg-welcome{margin-top:22px;padding-top:22px;}
+  }
+  @media (max-width:380px){
+    .login-screen .lg-descriptor{font-size:10px;letter-spacing:.14em;}
+    .login-screen .lg-trace{letter-spacing:.38em;padding-left:.38em;}
+  }
+  @media (max-height:700px) and (min-width:481px){
+    .login-screen .lg-card{padding-top:30px;padding-bottom:20px;}
+    .login-screen .lg-hm{font-size:42px;}
+    .login-screen .lg-welcome{margin-top:20px;padding-top:20px;}
+    .login-screen .lg-form{margin-top:18px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .login-screen,.login-screen *,.login-screen *::before,.login-screen *::after{
+      animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;
+    }
+    .login-screen .lg-spinner{display:none !important;}
+  }
 
   .challan-doc{width:190mm;max-width:100%;margin:0 auto;padding:12mm;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:12px;background:#fff;}
 
@@ -464,16 +628,62 @@
 </head>
 <body>
 <div class="login-screen" id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">Cutting<span>Tracker</span></div>
-    <p class="login-sub">Sign in to continue</p>
-    <label>Username</label>
-    <input type="text" id="login-username" placeholder="Username" autocomplete="username">
-    <label>Password</label>
-    <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
-    <button type="button" class="btn-primary" id="login-submit-btn">Sign In</button>
-    <div class="msg err" id="login-msg"></div>
-  </div>
+  <main class="lg-main">
+    <section class="lg-card" aria-labelledby="lg-title">
+      <header class="lg-brand">
+        <h1 class="lg-brand-name" id="lg-title"><span class="lg-hm">H&amp;M</span><span class="lg-trace">Traceability</span></h1>
+        <p class="lg-descriptor">Textile Operations &amp; Traceability</p>
+      </header>
+
+      <div class="lg-welcome">
+        <h2>Welcome back</h2>
+        <p>Sign in to access your traceability workspace.</p>
+      </div>
+
+      <form class="lg-form" id="login-form" novalidate>
+        <div class="lg-field">
+          <label class="lg-label" for="login-username">Employee ID / Email</label>
+          <div class="lg-control">
+            <svg class="lg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input class="lg-input" id="login-username" name="username" type="text" placeholder="Enter your employee ID or email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" aria-required="true" aria-describedby="login-username-error">
+          </div>
+          <p class="lg-error" id="login-username-error" hidden></p>
+        </div>
+
+        <div class="lg-field">
+          <label class="lg-label" for="login-password">Password</label>
+          <div class="lg-control">
+            <svg class="lg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input class="lg-input lg-input--pw" id="login-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" aria-required="true" aria-describedby="login-password-error">
+            <button type="button" class="lg-toggle" id="login-toggle-pw" aria-label="Show password" aria-pressed="false" aria-controls="login-password">
+              <svg class="lg-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="lg-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            </button>
+          </div>
+          <p class="lg-error" id="login-password-error" hidden></p>
+        </div>
+
+        <div class="lg-row">
+          <label class="lg-check"><input type="checkbox" id="login-remember" name="remember" checked><span>Remember me</span></label>
+          <button type="button" class="lg-link" id="login-forgot">Forgot password?</button>
+        </div>
+
+        <div class="lg-alert" id="login-msg" role="alert" hidden></div>
+
+        <button type="submit" class="lg-submit" id="login-submit-btn" aria-busy="false">
+          <span class="lg-spinner" aria-hidden="true"></span>
+          <span id="login-btn-label" aria-live="polite">Sign In</span>
+          <svg class="lg-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <p class="lg-secure">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Secure access to your workspace</span>
+      </p>
+    </section>
+  </main>
+  <footer class="lg-footer">&copy; 2026 H&amp;M Traceability &middot; All rights reserved</footer>
 </div>
 
 <div class="shell" id="app-shell" style="display:none;">
@@ -527,7 +737,32 @@
 /* Supabase cloud storage + Auth; original login page UI is preserved. */
 const SUPABASE_URL = 'https://nrxiwicenzlvpmadywtn.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0377eZCwmC4N0OEH1HVfpw_cX4nPR3a';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+/* Auth session storage for "Remember me": ticked -> session kept in localStorage (Supabase's default behaviour);
+   unticked -> sessionStorage, so the session ends when the browser/tab is closed. Passwords are never stored. */
+const authStorage = (function(){
+  const AUTH_KEY = /^sb-.+-auth-token/;
+  const ls = () => { try { return window.localStorage; } catch(e){ return null; } };
+  const ss = () => { try { return window.sessionStorage; } catch(e){ return null; } };
+  const hasAuthKey = (store) => { try { for(let i=0;i<store.length;i++){ if(AUTH_KEY.test(store.key(i))) return true; } } catch(e){} return false; };
+  const api = {
+    persist: !(ss() && hasAuthKey(ss())),   // true unless an existing session lives in sessionStorage
+    getItem(k){
+      try { const a = ss() && ss().getItem(k); if(a != null) return a; } catch(e){}
+      try { const b = ls() && ls().getItem(k); if(b != null) return b; } catch(e){}
+      return null;
+    },
+    setItem(k, v){
+      const keep = api.persist ? ls() : ss(), drop = api.persist ? ss() : ls();
+      try { if(keep) keep.setItem(k, v); } catch(e){}
+      try { if(drop) drop.removeItem(k); } catch(e){}
+    },
+    removeItem(k){
+      [ls(), ss()].forEach(function(s){ try { if(s) s.removeItem(k); } catch(e){} });
+    }
+  };
+  return api;
+})();
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { storage: authStorage } });
 window.storage = {
   async get(key) {
     const { data, error } = await sb.from('app_data').select('key,data').eq('key', key).maybeSingle();
@@ -1053,152 +1288,119 @@ function renderNew(){
   c.innerHTML = `
     <h2 class="section-title">Add File / PO / Country Entry</h2>
     <div class="row">
-      <div>
-        <label>File Number</label>
-        <input type="text" id="f-file" placeholder="e.g. F-101" list="file-list">
-        <datalist id="file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist>
-      </div>
-      <div>
-        <label>PO Number</label>
-        <input type="text" id="f-po" placeholder="e.g. PO-4521">
-      </div>
+      <div><label>File Number</label><input type="text" id="f-file" placeholder="e.g. F-101" list="file-list">
+      <datalist id="file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist></div>
+      <div><label>PO Number</label><input type="text" id="f-po" placeholder="e.g. PO-4521"></div>
     </div>
     <div class="row">
-      <div>
-        <label>Country Code</label>
-        <input type="text" id="f-country" placeholder="e.g. US, UK, AE" style="text-transform:uppercase">
-      </div>
-      <div>
-        <label>Origin</label>
-        <select id="f-origin">
-          <option value="COMMON">Common</option>
-          <option value="MADE IN INDIA">Made In India</option>
-        </select>
-      </div>
+      <div><label>Country Code</label><input type="text" id="f-country" placeholder="e.g. US, UK, AE" style="text-transform:uppercase"></div>
+      <div><label>Origin</label><select id="f-origin"><option value="COMMON">Common</option><option value="MADE IN INDIA">Made In India</option></select></div>
     </div>
-    <div class="row">
-      <div>
-        <label>Cutting Date</label>
-        <input type="date" id="f-date">
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label>Color (optional)</label>
-        <input type="text" id="f-color" placeholder="e.g. Dark Red">
-      </div>
-    </div>
-
-    <label>Size-wise Order Quantity</label>
-    <div id="size-rows" class="size-box-wrap"></div>
+    <div class="row"><div><label>Cutting Date</label><input type="date" id="f-date"></div></div>
+    <div class="row"><div><label>Color (optional)</label><input type="text" id="f-color" placeholder="e.g. Dark Red"></div></div>
+    <label>Size-wise Order Quantity</label><div id="size-rows" class="size-box-wrap"></div>
     <button type="button" class="add-size-btn" id="add-size-btn">+ Add Size</button>
-
-    <button type="button" class="btn-primary" id="save-order-btn">Save Order</button>
-    <div class="msg" id="new-msg"></div>
+    <button type="button" class="btn-primary" id="save-order-btn">Save Order</button><div class="msg" id="new-msg"></div>
     <hr style="margin:28px 0;border:0;border-top:1px solid var(--border,#ddd)">
     <h2 class="section-title">Edit Existing File</h2>
-    <p class="muted">File Number daal kar us file ke sabhi PO, country, color, date aur size-wise quantity edit karein.</p>
-    <div class="row">
-      <div><label>File Number to Edit</label><input type="text" id="edit-file-number" placeholder="Enter exact File Number" list="edit-file-list"><datalist id="edit-file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist></div>
-      <div style="align-self:end"><button type="button" class="btn-primary" id="load-edit-file">Load File</button></div>
-    </div>
-    <div id="edit-file-panel"></div>
+    <p>File Number daal kar Load File karein. Is file ki saari order entries, colors, sizes aur quantities edit kar sakte hain.</p>
+    <div class="row"><div><label>File Number to Edit</label><input type="text" id="edit-file-number" list="edit-file-list" placeholder="Exact file number"></div>
+    <div><label>&nbsp;</label><button type="button" class="btn-primary" id="load-edit-file">Load File</button></div></div>
+    <datalist id="edit-file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist>
+    <div class="msg" id="edit-file-msg"></div><div id="edit-file-entries"></div>
+    <button type="button" class="add-size-btn" id="add-edit-entry" style="display:none">+ Add Order Entry to This File</button>
+    <button type="button" class="btn-primary" id="save-edit-file" style="display:none;margin-top:12px">Save All File Changes to Supabase</button>
   `;
   const sizeRows = document.getElementById('size-rows');
   function addSizeRow(size='', qty=''){
-    const div = document.createElement('div');
-    div.className='size-box';
-    div.innerHTML = `
-      <button type="button" class="rm">×</button>
-      <input type="number" placeholder="Size" class="sz-input" value="${size}">
-      <input type="number" placeholder="Qty" class="qty-input" value="${qty}">
-    `;
-    div.querySelector('.rm').onclick = ()=> div.remove();
-    sizeRows.appendChild(div);
+    const div = document.createElement('div'); div.className='size-box';
+    div.innerHTML = `<button type="button" class="rm">×</button><input type="number" placeholder="Size" class="sz-input" value="${escapeHtml(size)}"><input type="number" placeholder="Qty" class="qty-input" value="${escapeHtml(qty)}">`;
+    div.querySelector('.rm').onclick = ()=>div.remove(); sizeRows.appendChild(div);
   }
   addSizeRow(); addSizeRow(); addSizeRow();
-  document.getElementById('add-size-btn').onclick = ()=> addSizeRow();
-
+  document.getElementById('add-size-btn').onclick = ()=>addSizeRow();
   document.getElementById('save-order-btn').onclick = async ()=>{
-    const fileNumber = document.getElementById('f-file').value.trim();
-    const po = document.getElementById('f-po').value.trim();
-    const country = document.getElementById('f-country').value.trim().toUpperCase();
-    const origin = document.getElementById('f-origin').value;
-    const date = document.getElementById('f-date').value;
-    const color = document.getElementById('f-color').value.trim();
-    const sizes = [];
-    sizeRows.querySelectorAll('.size-box').forEach(row=>{
-      const sz = row.querySelector('.sz-input').value.trim();
-      const qty = row.querySelector('.qty-input').value.trim();
-      if(sz!=='' && qty!==''){ sizes.push({size:sz, qty:Number(qty)}); }
-    });
-    const msg = document.getElementById('new-msg');
-    if(!fileNumber || !po || !country || !date || sizes.length===0){
-      msg.textContent = 'File Number, PO Number, Country Code, Date, and at least one Size are required.';
-      msg.className='msg err show';
-      return;
+    const fileNumber=document.getElementById('f-file').value.trim(), po=document.getElementById('f-po').value.trim();
+    const country=document.getElementById('f-country').value.trim().toUpperCase(), origin=document.getElementById('f-origin').value;
+    const date=document.getElementById('f-date').value, color=document.getElementById('f-color').value.trim(), sizes=[];
+    sizeRows.querySelectorAll('.size-box').forEach(row=>{const sz=row.querySelector('.sz-input').value.trim(),qty=row.querySelector('.qty-input').value.trim();if(sz!==''&&qty!=='')sizes.push({size:sz,qty:Number(qty)});});
+    const msg=document.getElementById('new-msg');
+    if(!fileNumber||!po||!country||!date||!sizes.length){msg.textContent='File Number, PO Number, Country Code, Date, and at least one Size are required.';msg.className='msg err show';return;}
+    ORDERS.push({id:uid(),fileNumber,po,country,origin,date,color,sizes,createdAt:Date.now()});
+    try{await saveOrders();msg.textContent='Order saved to Supabase — File '+fileNumber+' / PO '+po+' / '+country;msg.className='msg show';}
+    catch(e){msg.textContent='Save failed: '+(e.message||e);msg.className='msg err show';return;}
+    document.getElementById('f-country').value='';sizeRows.querySelectorAll('.qty-input').forEach(inp=>inp.value='');document.getElementById('f-country').focus();
+  };
+
+  let editingFile = '';
+  const editEntries = document.getElementById('edit-file-entries');
+  const editMsg = document.getElementById('edit-file-msg');
+  function sizeEditor(sizes){
+    const wrap=document.createElement('div');wrap.className='size-box-wrap edit-size-rows';
+    (sizes||[]).forEach(sz=>addOne(sz.size,sz.qty));
+    function addOne(size='',qty=''){
+      const row=document.createElement('div');row.className='size-box';
+      row.innerHTML=`<button type="button" class="rm" title="Remove size">×</button><input type="number" class="edit-size" placeholder="Size" value="${escapeHtml(size)}"><input type="number" class="edit-qty" placeholder="Quantity" value="${escapeHtml(qty)}">`;
+      row.querySelector('.rm').onclick=()=>row.remove();wrap.appendChild(row);
     }
-    ORDERS.push({id:uid(), fileNumber, po, country, origin, date, color, sizes, createdAt:Date.now()});
-    await saveOrders();
-    msg.textContent = 'Order saved — File ' + fileNumber + ' / PO ' + po + ' / ' + country;
-    msg.className='msg show';
-    // Keep File Number, PO Number, Color, Origin AND the Size numbers as-is —
-    // only clear Country and the Quantities, so the user can quickly add the next country.
-    document.getElementById('f-country').value='';
-    sizeRows.querySelectorAll('.qty-input').forEach(inp=> inp.value='');
-    document.getElementById('f-country').focus();
-    // Refresh the editable file-number choices after adding an order.
-    const dl = document.getElementById('edit-file-list');
-    if(dl) dl.innerHTML = [...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('');
+    const add=document.createElement('button');add.type='button';add.className='add-size-btn';add.textContent='+ Add Size';add.onclick=()=>addOne();wrap.appendChild(add);
+    return wrap;
+  }
+  function renderEditableEntries(list){
+    editEntries.innerHTML='';
+    list.forEach((order,index)=>{
+      const card=document.createElement('div');card.className='card';card.style.cssText='padding:16px;margin:14px 0;border:1px solid var(--border,#ddd);border-radius:12px';
+      card.innerHTML=`<h3 style="margin-top:0">Order Entry ${index+1}</h3>
+        <div class="row"><div><label>File Number</label><input class="ed-file" value="${escapeHtml(order.fileNumber||'')}"></div><div><label>PO Number</label><input class="ed-po" value="${escapeHtml(order.po||'')}"></div></div>
+        <div class="row"><div><label>Country Code</label><input class="ed-country" value="${escapeHtml(order.country||'')}"></div><div><label>Origin</label><select class="ed-origin"><option value="COMMON">Common</option><option value="MADE IN INDIA">Made In India</option></select></div></div>
+        <div class="row"><div><label>Cutting Date</label><input type="date" class="ed-date" value="${escapeHtml(order.date||'')}"></div><div><label>Color</label><input class="ed-color" value="${escapeHtml(order.color||'')}" placeholder="Color"></div></div>
+        <label>Size-wise quantities</label><div class="ed-sizes"></div>
+        <button type="button" class="add-size-btn ed-remove-entry" style="margin-top:12px">Remove This Order Entry</button>`;
+      card.querySelector('.ed-origin').value=order.origin||'COMMON';
+      card.dataset.orderId=order.id||'';
+      card.querySelector('.ed-sizes').appendChild(sizeEditor(order.sizes||[]));
+      card.querySelector('.ed-remove-entry').onclick=()=>{
+        if(!confirm('Is order entry ko file se remove karna hai? Yeh change save karne ke baad hi Supabase mein hoga.'))return;
+        card.dataset.removed='true';card.style.opacity='.45';card.querySelector('.ed-remove-entry').textContent='Marked for removal — Save All Changes to confirm';
+      };
+      editEntries.appendChild(card);
+    });
+  }
+  function currentEditableOrders(){
+    return [...editEntries.children].map(card=>{
+      const sizes=[...card.querySelectorAll('.edit-size-rows .size-box')].map(row=>({size:row.querySelector('.edit-size').value.trim(),qty:Number(row.querySelector('.edit-qty').value)})).filter(x=>x.size!==''&&Number.isFinite(x.qty));
+      return {id:card.dataset.orderId||uid(),fileNumber:card.querySelector('.ed-file').value.trim(),po:card.querySelector('.ed-po').value.trim(),country:card.querySelector('.ed-country').value.trim().toUpperCase(),origin:card.querySelector('.ed-origin').value,date:card.querySelector('.ed-date').value,color:card.querySelector('.ed-color').value.trim(),sizes,createdAt:ORDERS.find(o=>o.id===card.dataset.orderId)?.createdAt||Date.now(),_removed:card.dataset.removed==='true'};
+    });
+  }
+  document.getElementById('load-edit-file').onclick=()=>{
+    editingFile=document.getElementById('edit-file-number').value.trim();
+    if(!editingFile){editMsg.textContent='Pehle File Number daalein.';editMsg.className='msg err show';return;}
+    const matches=ORDERS.filter(o=>String(o.fileNumber||'').trim().toLowerCase()===editingFile.toLowerCase());
+    if(!matches.length){editEntries.innerHTML='';document.getElementById('save-edit-file').style.display='none';document.getElementById('add-edit-entry').style.display='none';editMsg.textContent='Is File Number ka order nahi mila. Exact number check karein.';editMsg.className='msg err show';return;}
+    renderEditableEntries(matches);document.getElementById('save-edit-file').style.display='inline-block';document.getElementById('add-edit-entry').style.display='inline-block';
+    editMsg.textContent=matches.length+' order entries loaded. Changes save karne se pehle details check kar lein.';editMsg.className='msg show';
   };
-
-  const editPanel = document.getElementById('edit-file-panel');
-  document.getElementById('load-edit-file').onclick = ()=> renderFileEditor(document.getElementById('edit-file-number').value.trim(), editPanel);
-}
-
-function renderFileEditor(fileNumber, panel){
-  if(!fileNumber){ panel.innerHTML='<div class="msg err show">Pehle File Number daalein.</div>'; return; }
-  const matches = ORDERS.filter(o=>String(o.fileNumber||'').trim().toLowerCase()===fileNumber.toLowerCase());
-  if(!matches.length){ panel.innerHTML='<div class="msg err show">Is File Number ka order nahi mila. Number check karein.</div>'; return; }
-  let draft = matches.map(o=>JSON.parse(JSON.stringify(o)));
-  const render = ()=>{
-    panel.innerHTML = `<div class="msg show">Loaded File: <b>${escapeHtml(fileNumber)}</b> — ${draft.length} order entr${draft.length===1?'y':'ies'}. Changes save karne ke liye neeche Save Changes dabayein.</div>` +
-      draft.map((o,idx)=>`<div class="sheet-block" style="padding:14px;margin:14px 0;border:1px solid var(--border,#ddd);border-radius:12px">
-        <div class="sheet-block-head"><b>Order Entry ${idx+1}</b><button type="button" class="rm edit-remove-entry" data-index="${idx}" style="float:right">Remove Entry</button></div>
-        <div class="row"><div><label>File Number</label><input data-field="fileNumber" data-index="${idx}" value="${escapeHtml(o.fileNumber||'')}" /></div><div><label>PO Number</label><input data-field="po" data-index="${idx}" value="${escapeHtml(o.po||'')}" /></div></div>
-        <div class="row"><div><label>Country Code</label><input data-field="country" data-index="${idx}" value="${escapeHtml(o.country||'')}" /></div><div><label>Origin</label><select data-field="origin" data-index="${idx}"><option value="COMMON" ${(o.origin||'COMMON')==='COMMON'?'selected':''}>Common</option><option value="MADE IN INDIA" ${(o.origin||'')==='MADE IN INDIA'?'selected':''}>Made In India</option></select></div></div>
-        <div class="row"><div><label>Cutting Date</label><input type="date" data-field="date" data-index="${idx}" value="${escapeHtml(o.date||'')}" /></div><div><label>Color</label><input data-field="color" data-index="${idx}" value="${escapeHtml(o.color||'')}" /></div></div>
-        <label>Size-wise Quantity</label><div class="size-box-wrap edit-sizes" data-index="${idx}">${(o.sizes||[]).map((z,si)=>`<div class="size-box"><button type="button" class="rm edit-remove-size" data-index="${idx}" data-size-index="${si}">×</button><input type="text" class="edit-size-val" data-index="${idx}" data-size-index="${si}" placeholder="Size" value="${escapeHtml(z.size)}"><input type="number" min="0" class="edit-qty-val" data-index="${idx}" data-size-index="${si}" placeholder="Qty" value="${escapeHtml(z.qty)}"></div>`).join('')}</div>
-        <button type="button" class="add-size-btn edit-add-size" data-index="${idx}">+ Add Size</button>
-      </div>`).join('') +
-      `<div class="row"><button type="button" class="add-size-btn" id="edit-add-entry">+ Add Order Entry</button><button type="button" class="btn-primary" id="save-file-edits">Save All Changes</button></div><div class="msg" id="edit-save-msg"></div>`;
-
-    panel.querySelectorAll('[data-field]').forEach(el=>el.addEventListener('input',()=>{draft[Number(el.dataset.index)][el.dataset.field]=el.value;}));
-    panel.querySelectorAll('.edit-size-val,.edit-qty-val').forEach(el=>el.addEventListener('input',()=>{
-      const o=draft[Number(el.dataset.index)], si=Number(el.dataset.sizeIndex); if(!o.sizes[si]) o.sizes[si]={size:'',qty:0};
-      if(el.classList.contains('edit-size-val')) o.sizes[si].size=el.value; else o.sizes[si].qty=el.value;
-    }));
-    panel.querySelectorAll('.edit-remove-size').forEach(btn=>btn.onclick=()=>{draft[+btn.dataset.index].sizes.splice(+btn.dataset.sizeIndex,1);render();});
-    panel.querySelectorAll('.edit-add-size').forEach(btn=>btn.onclick=()=>{draft[+btn.dataset.index].sizes.push({size:'',qty:0});render();});
-    panel.querySelectorAll('.edit-remove-entry').forEach(btn=>btn.onclick=()=>{if(confirm('Is order entry ko file se remove karna hai? Ye change Save All Changes dabane par save hoga.')){draft.splice(+btn.dataset.index,1);render();}});
-    document.getElementById('edit-add-entry').onclick=()=>{draft.push({id:uid(),fileNumber,po:'',country:'',origin:'COMMON',date:new Date().toISOString().slice(0,10),color:'',sizes:[{size:'',qty:0}],createdAt:Date.now()});render();};
-    document.getElementById('save-file-edits').onclick=async()=>{
-      // Capture the current form values before saving, including the last field edited.
-      panel.querySelectorAll('[data-field]').forEach(el=>{draft[+el.dataset.index][el.dataset.field]=el.value;});
-      panel.querySelectorAll('.edit-size-val,.edit-qty-val').forEach(el=>{const o=draft[+el.dataset.index],si=+el.dataset.sizeIndex;if(!o.sizes[si])o.sizes[si]={size:'',qty:0};if(el.classList.contains('edit-size-val'))o.sizes[si].size=el.value;else o.sizes[si].qty=el.value;});
-      const invalid=draft.some(o=>!String(o.fileNumber||'').trim()||!String(o.po||'').trim()||!String(o.country||'').trim()||!String(o.date||'').trim()||!(o.sizes||[]).some(z=>String(z.size||'').trim()&&Number(z.qty)>=0&&String(z.qty)!==''));
-      if(invalid){const m=document.getElementById('edit-save-msg');m.textContent='Har entry mein File Number, PO, Country, Date aur kam se kam ek valid Size/Qty bharein.';m.className='msg err show';return;}
-      const ids=new Set(matches.map(o=>o.id));
-      // Only replace records for the loaded file; every other file and all cutting/challan data remain untouched.
-      ORDERS=ORDERS.filter(o=>!ids.has(o.id));
-      draft.forEach(o=>{o.sizes=(o.sizes||[]).filter(z=>String(z.size||'').trim()!==''&&String(z.qty)!==''&&Number(z.qty)>=0).map(z=>({size:String(z.size).trim(),qty:Number(z.qty)}));if(!o.id)o.id=uid();if(!o.createdAt)o.createdAt=Date.now();ORDERS.push(o);});
-      await saveOrders();
-      const m=document.getElementById('edit-save-msg');m.textContent='File '+fileNumber+' ke changes save ho gaye.';m.className='msg show';
-      // Refresh the reference snapshot so a second save targets the latest records.
-      matches.splice(0,matches.length,...draft.map(o=>JSON.parse(JSON.stringify(o))));
-    };
+  document.getElementById('add-edit-entry').onclick=()=>{
+    if(!editingFile)return;
+    const blank={id:uid(),fileNumber:editingFile,po:'',country:'',origin:'COMMON',date:'',color:'',sizes:[],createdAt:Date.now()};
+    const current=currentEditableOrders().filter(o=>!o._removed);
+    renderEditableEntries([...current,blank]);
   };
-  render();
+  document.getElementById('save-edit-file').onclick=async()=>{
+    if(!editingFile)return;
+    const edited=currentEditableOrders();
+    const bad=edited.find(o=>!o._removed&&(!o.fileNumber||!o.po||!o.country||!o.date||!o.sizes.length));
+    if(bad){editMsg.textContent='Har active entry mein File Number, PO, Country, Date aur kam se kam ek size/quantity zaroor bharein.';editMsg.className='msg err show';return;}
+    const oldIds=new Set(ORDERS.filter(o=>String(o.fileNumber||'').trim().toLowerCase()===editingFile.toLowerCase()).map(o=>o.id));
+    const retained=ORDERS.filter(o=>!oldIds.has(o.id));
+    const replacements=edited.filter(o=>!o._removed).map(({_removed,...o})=>o);
+    const confirmText=`File ${editingFile} mein ${replacements.length} active order entries save hongi. Sirf is file ki order entries update hongi; doosri files aur cutting/challan records ko code se delete nahi kiya jayega. Continue?`;
+    if(!confirm(confirmText))return;
+    const previousOrders=ORDERS;
+    ORDERS=[...retained,...replacements];
+    try{await saveOrders();editMsg.textContent='Saved successfully to Supabase. File '+editingFile+' updated.';editMsg.className='msg show';}
+    catch(e){ORDERS=previousOrders;editMsg.textContent='Supabase save failed: '+(e.message||e)+' — local order list restored; no further edits were applied.';editMsg.className='msg err show';}
+  };
 }
 
 /* ---------- ORDER SHEET — shared size-matrix builder (sizes across top, countries down, grouped by File then PO, then Cutting Date) ---------- */
@@ -1350,14 +1552,14 @@ function renderList(){
 
 /* ---------- TAB: CUTTING ISSUE ENTRY ---------- */
 // Given a fileNumber (and optional origin filter), sorted list of orders (POs) in that file, earliest cutting date first.
-function ordersInFile(fileNumber, origin, color){
-  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin) && (!color || (o.color||'').trim()===color))
+function ordersInFile(fileNumber, origin){
+  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin))
     .sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
 }
 
 // Allocate an entered qty (per size) across the file's POs matching the given Origin, earliest cutting date first.
-function allocateForFile(fileNumber, sizeQtyMap, origin, color){
-  const list = ordersInFile(fileNumber, origin, color);
+function allocateForFile(fileNumber, sizeQtyMap, origin){
+  const list = ordersInFile(fileNumber, origin);
   const result = [];
   for(const size in sizeQtyMap){
     let remaining = Number(sizeQtyMap[size]);
@@ -1418,8 +1620,7 @@ function renderCut(){
     const formBox = document.getElementById('cf-form');
 
     function renderDynamic(fileNumber, origin, dynamicBox){
-      const selectedColor = document.getElementById('cf-color')?.value || '';
-      const list = ordersInFile(fileNumber, origin, selectedColor);
+      const list = ordersInFile(fileNumber, origin);
       if(list.length===0){
         dynamicBox.innerHTML = '<div class="empty">No orders found in this File Number for the selected Origin.</div>';
         return;
@@ -1469,8 +1670,7 @@ function renderCut(){
         });
         if(Object.keys(sizeQtyMap).length===0){ msg.textContent='Please enter quantity for at least one size.'; msg.className='msg err show'; resultBox.innerHTML=''; return; }
 
-        const selectedColor = document.getElementById('cf-color').value;
-        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin, selectedColor);
+        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin);
 
         // group allocations by orderId to create cutting entries
         const byOrder = {};
@@ -1580,23 +1780,12 @@ function renderCut(){
           <option value="COMMON">Common</option>
           <option value="MADE IN INDIA">Made In India</option>
         </select>
-        <label>Color</label>
-        <select id="cf-color"></select>
         <div id="cf-dynamic"></div>
       `;
       const dynamicBox = document.getElementById('cf-dynamic');
       const originSelect = document.getElementById('cf-origin');
-      const colorSelect = document.getElementById('cf-color');
-      function refreshColors(){
-        const previous = colorSelect.value;
-        const colors = [...new Set(ORDERS.filter(o=>o.fileNumber===fileNumber && (o.origin||'COMMON')===originSelect.value).map(o=>(o.color||'').trim()))].sort((a,b)=>a.localeCompare(b));
-        colorSelect.innerHTML = colors.map(col=>`<option value="${escapeHtml(col)}">${escapeHtml(col || 'Unspecified colour')}</option>`).join('');
-        if(colors.includes(previous)) colorSelect.value = previous;
-      }
-      refreshColors();
       renderDynamic(fileNumber, originSelect.value, dynamicBox);
-      originSelect.onchange = ()=>{ refreshColors(); renderDynamic(fileNumber, originSelect.value, dynamicBox); };
-      colorSelect.onchange = ()=> renderDynamic(fileNumber, originSelect.value, dynamicBox);
+      originSelect.onchange = ()=> renderDynamic(fileNumber, originSelect.value, dynamicBox);
     }
 
     const fileInput = document.getElementById('cf-file');
@@ -1911,29 +2100,20 @@ function buildChallanHtml(challan){
   challan.rows.forEach(r=>{ if(!sizeOrder.includes(r.size)) sizeOrder.push(r.size); });
   sizeOrder.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
 
-  // Keep rows separate by country + color + origin. If one PO/country has
-  // more than one color, never let the first color overwrite the others.
-  const byGroup = {};
-  const groupOrder = [];
+  const byCountry = {};
+  const countryOrder = [];
   challan.rows.forEach(r=>{
-    const color = String(r.color || '').trim();
-    const origin = r.origin || 'COMMON';
-    const groupKey = JSON.stringify([r.country, color.toLowerCase(), origin]);
-    if(!byGroup[groupKey]){
-      byGroup[groupKey] = { country: r.country, color, origin, rows: [] };
-      groupOrder.push(groupKey);
-    }
-    byGroup[groupKey].rows.push(r);
+    if(!byCountry[r.country]){ byCountry[r.country]=[]; countryOrder.push(r.country); byCountry[r.country]._color = r.color||''; byCountry[r.country]._origin = r.origin||'COMMON'; }
+    byCountry[r.country].push(r);
   });
 
   const sizeHeadHtml = sizeOrder.map(sz=>`<th>${escapeHtml(String(sz))}</th>`).join('');
   const colTotals = {}; sizeOrder.forEach(sz=> colTotals[sz]=0);
   let grandTotal = 0;
 
-  const bodyRowsHtml = groupOrder.map((groupKey,i)=>{
-    const group = byGroup[groupKey];
-    const list = group.rows;
-    const bySize = {}; list.forEach(r=> bySize[r.size]=(bySize[r.size]||0)+Number(r.qty));
+  const bodyRowsHtml = countryOrder.map((country,i)=>{
+    const list = byCountry[country];
+    const bySize = {}; list.forEach(r=> bySize[r.size]=Number(r.qty));
     let rowTotal = 0;
     const sizeCellsHtml = sizeOrder.map(sz=>{
       const q = bySize[sz]||0;
@@ -1941,17 +2121,17 @@ function buildChallanHtml(challan){
       return `<td>${q>0?q:'-'}</td>`;
     }).join('');
     grandTotal += rowTotal;
-    const originSuffix = group.origin === 'MADE IN INDIA' ? ' - MADE IN INDIA' : '';
+    const originSuffix = list._origin === 'MADE IN INDIA' ? ' - MADE IN INDIA' : '';
     return `
       <tr>
         <td>${i+1}</td>
         <td>${escapeHtml(challan.fileNumber)}</td>
-        <td class="desc">CUTTING - ISSUE - (${escapeHtml(group.country)} - ${escapeHtml(challan.po)})${originSuffix}</td>
+        <td class="desc">CUTTING - ISSUE - (${escapeHtml(country)} - ${escapeHtml(challan.po)})${originSuffix}</td>
         <td></td>
         ${sizeCellsHtml}
         <td><b>${rowTotal}</b></td>
         <td>PCS</td>
-        <td>${escapeHtml(group.color)}</td>
+        <td>${escapeHtml(list._color||'')}</td>
       </tr>
     `;
   }).join('');
@@ -2351,13 +2531,139 @@ function showApp(){
   document.getElementById('app-shell').style.display = 'flex';
   applyRoleVisibility();
 }
+/* ---------- Login UI ----------
+   authenticateUser() is the single place that talks to the auth service (currently Supabase).
+   To connect a different backend, replace the body of that function; the rest of the form is service-agnostic. */
+const LOGIN_ID_KEY = 'ht-login-id';   // remembered employee ID / email only — never the password
+const LOGIN_ALIASES = { inadeemx:'inadeemx@gmail.com', cutting:'nadeemansaries@gmail.com' };  // short usernames kept from the original login
+let loginBusy = false;
+const $login = (id) => document.getElementById(id);
+
+async function authenticateUser(identifier, password){
+  const email = LOGIN_ALIASES[identifier.toLowerCase()] || identifier;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error) throw error;
+  return { user: data.user, email };
+}
+
+function buildCurrentUser(authUser, email){
+  const role = (authUser.app_metadata && authUser.app_metadata.role) || (email.toLowerCase()==='nadeemansaries@gmail.com' ? 'cutting' : 'admin');
+  return role === 'cutting'
+    ? { username:'cutting', name:'Cutting', isAdmin:false, allowedTabs:['cut','issued','list'] }
+    : { username:'inadeemx', name:'Admin', isAdmin:true, allowedTabs:['dashboard','new','list','cut','issued','date','challans','settings','users'] };
+}
+
+function friendlyAuthError(e){
+  const m = ((e && e.message) || '').toLowerCase();
+  if(m.includes('invalid login') || m.includes('invalid credentials')) return 'Incorrect ID/email or password. Check both and try again.';
+  if(m.includes('not confirmed')) return 'This account isn’t verified yet. Contact your administrator.';
+  if((e && e.status === 429) || m.includes('rate limit')) return 'Too many attempts. Wait a minute, then try again.';
+  if(m.includes('fetch') || m.includes('network')) return 'Can’t reach the server. Check your connection and try again.';
+  return 'Sign-in failed. Try again, or contact your administrator if it keeps happening.';
+}
+
+function setFieldError(input, text){
+  const err = $login(input.id + '-error');
+  err.textContent = text || '';
+  err.hidden = !text;
+  if(text) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+}
+
+function setLoginMessage(text, type){
+  const box = $login('login-msg');
+  if(!text){ box.hidden = true; box.textContent = ''; box.className = 'lg-alert'; return; }
+  box.className = 'lg-alert lg-alert--' + (type || 'error');
+  box.textContent = text;
+  box.hidden = false;
+}
+
+function setLoginLoading(on){
+  loginBusy = on;
+  const btn = $login('login-submit-btn');
+  btn.classList.toggle('is-loading', on);
+  btn.setAttribute('aria-busy', on ? 'true' : 'false');
+  $login('login-btn-label').textContent = on ? 'Signing in…' : 'Sign In';
+  $login('login-username').readOnly = on;
+  $login('login-password').readOnly = on;
+}
+
+function syncPasswordToggle(show){
+  const t = $login('login-toggle-pw');
+  t.classList.toggle('is-visible', show);
+  t.setAttribute('aria-pressed', show ? 'true' : 'false');
+  t.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+}
+
+function validateLogin(){
+  const idEl = $login('login-username'), pwEl = $login('login-password');
+  const id = idEl.value.trim();
+  let idErr = '';
+  if(!id) idErr = 'Enter your employee ID or email.';
+  else if(id.indexOf('@') > -1 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) idErr = 'Enter a valid email address, like name@company.com.';
+  else if(/\s/.test(id)) idErr = 'Employee ID can’t contain spaces.';
+  const pwErr = pwEl.value ? '' : 'Enter your password.';
+  setFieldError(idEl, idErr);
+  setFieldError(pwEl, pwErr);
+  const firstBad = idErr ? idEl : (pwErr ? pwEl : null);
+  if(firstBad) firstBad.focus();
+  return !firstBad;
+}
+
+function rememberLoginId(remember, id){
+  try { if(remember) localStorage.setItem(LOGIN_ID_KEY, id); else localStorage.removeItem(LOGIN_ID_KEY); } catch(e){}
+}
+
+async function doLogin(e){
+  if(e) e.preventDefault();
+  if(loginBusy) return;
+  setLoginMessage('');
+  if(!validateLogin()) return;
+  const identifier = $login('login-username').value.trim();
+  const password = $login('login-password').value;
+  const remember = $login('login-remember').checked;
+  authStorage.persist = remember;
+  setLoginLoading(true);
+  let auth;
+  try {
+    auth = await authenticateUser(identifier, password);
+  } catch(err) {
+    console.error('Sign-in failed', err);
+    setLoginMessage(friendlyAuthError(err), 'error');
+    setLoginLoading(false);
+    const pw = $login('login-password');
+    pw.focus(); pw.select();
+    return;
+  }
+  try {
+    CURRENT_USER = buildCurrentUser(auth.user, auth.email);
+    rememberLoginId(remember, identifier);
+    $login('login-password').value = '';
+    showApp();
+    await bootApp();
+  } catch(err) {
+    console.error('Workspace failed to load', err);
+    showLogin();
+    setLoginMessage('You’re signed in, but the workspace didn’t load. Check your connection and try again.', 'error');
+  } finally {
+    setLoginLoading(false);
+  }
+}
+
 function showLogin(){
   document.getElementById('app-shell').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-password').value = '';
-  const msg = document.getElementById('login-msg');
-  msg.classList.remove('show');
-  msg.textContent = '';
+  const idEl = $login('login-username'), pwEl = $login('login-password');
+  pwEl.value = ''; pwEl.type = 'password'; syncPasswordToggle(false);
+  setFieldError(idEl, ''); setFieldError(pwEl, '');
+  setLoginMessage('');
+  setLoginLoading(false);
+  let saved = null;
+  try { saved = localStorage.getItem(LOGIN_ID_KEY); } catch(e){}
+  if(!idEl.value && saved) idEl.value = saved;
+  // Autofocus only where it won't pop a mobile keyboard.
+  if(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+    (idEl.value ? pwEl : idEl).focus();
+  }
 }
 
 async function bootApp(){
@@ -2372,32 +2678,6 @@ async function bootApp(){
   playContentFade();
 }
 
-async function doLogin(){
-  const entered = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
-  const msg = document.getElementById('login-msg');
-  if(!entered || !password){ msg.textContent='Enter username/email and password.'; msg.classList.add('show'); return; }
-  const lower = entered.toLowerCase();
-  const email = lower === 'inadeemx' ? 'inadeemx@gmail.com' :
-                (lower === 'cutting' ? 'nadeemansaries@gmail.com' : entered);
-  msg.textContent='Signing in...'; msg.classList.add('show');
-  try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if(error) throw error;
-    const authUser = data.user;
-    const role = (authUser.app_metadata && authUser.app_metadata.role) || (email.toLowerCase()==='nadeemansaries@gmail.com' ? 'cutting' : 'admin');
-    CURRENT_USER = role === 'cutting'
-      ? { username:'cutting', name:'Cutting', isAdmin:false, allowedTabs:['cut','issued','list'] }
-      : { username:'inadeemx', name:'Admin', isAdmin:true, allowedTabs:['dashboard','new','list','cut','issued','date','challans','settings','users'] };
-    msg.classList.remove('show'); msg.textContent='';
-    showApp(); await bootApp();
-  } catch(e) {
-    console.error('Supabase login failed', e);
-    msg.textContent = (e && e.message) ? e.message : 'Login failed. Check username and password.';
-    msg.classList.add('show');
-  }
-}
-
 async function doLogout(){
   try { await sb.auth.signOut(); } catch(e) { console.warn('Sign out:', e); }
   CURRENT_USER = null;
@@ -2406,9 +2686,23 @@ async function doLogout(){
 }
 
 function bindLogin(){
-  document.getElementById('login-submit-btn').onclick = doLogin;
-  ['login-username','login-password'].forEach(id=>{
-    document.getElementById(id).addEventListener('keydown', (e)=>{ if(e.key==='Enter') doLogin(); });
+  $login('login-form').addEventListener('submit', doLogin);
+  ['login-username','login-password'].forEach(function(id){
+    $login(id).addEventListener('input', function(){
+      setFieldError($login(id), '');
+      if(!$login('login-msg').hidden) setLoginMessage('');
+    });
+  });
+  const toggle = $login('login-toggle-pw');
+  toggle.addEventListener('mousedown', function(e){ e.preventDefault(); });   // keep focus in the field on click/tap
+  toggle.addEventListener('click', function(){
+    const pw = $login('login-password');
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    syncPasswordToggle(show);
+  });
+  $login('login-forgot').addEventListener('click', function(){
+    setLoginMessage('Password resets are handled by your administrator. Contact them to regain access.', 'info');
   });
   document.getElementById('logout-btn').onclick = doLogout;
 }

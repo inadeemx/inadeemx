@@ -1291,14 +1291,14 @@ function renderList(){
 
 /* ---------- TAB: CUTTING ISSUE ENTRY ---------- */
 // Given a fileNumber (and optional origin filter), sorted list of orders (POs) in that file, earliest cutting date first.
-function ordersInFile(fileNumber, origin){
-  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin))
+function ordersInFile(fileNumber, origin, color){
+  return ORDERS.filter(o=> o.fileNumber===fileNumber && (!origin || (o.origin||'COMMON')===origin) && (!color || (o.color||'').trim()===color))
     .sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
 }
 
 // Allocate an entered qty (per size) across the file's POs matching the given Origin, earliest cutting date first.
-function allocateForFile(fileNumber, sizeQtyMap, origin){
-  const list = ordersInFile(fileNumber, origin);
+function allocateForFile(fileNumber, sizeQtyMap, origin, color){
+  const list = ordersInFile(fileNumber, origin, color);
   const result = [];
   for(const size in sizeQtyMap){
     let remaining = Number(sizeQtyMap[size]);
@@ -1359,7 +1359,8 @@ function renderCut(){
     const formBox = document.getElementById('cf-form');
 
     function renderDynamic(fileNumber, origin, dynamicBox){
-      const list = ordersInFile(fileNumber, origin);
+      const selectedColor = document.getElementById('cf-color')?.value || '';
+      const list = ordersInFile(fileNumber, origin, selectedColor);
       if(list.length===0){
         dynamicBox.innerHTML = '<div class="empty">No orders found in this File Number for the selected Origin.</div>';
         return;
@@ -1409,7 +1410,8 @@ function renderCut(){
         });
         if(Object.keys(sizeQtyMap).length===0){ msg.textContent='Please enter quantity for at least one size.'; msg.className='msg err show'; resultBox.innerHTML=''; return; }
 
-        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin);
+        const selectedColor = document.getElementById('cf-color').value;
+        const allocationResult = allocateForFile(fileNumber, sizeQtyMap, origin, selectedColor);
 
         // group allocations by orderId to create cutting entries
         const byOrder = {};
@@ -1519,12 +1521,23 @@ function renderCut(){
           <option value="COMMON">Common</option>
           <option value="MADE IN INDIA">Made In India</option>
         </select>
+        <label>Color</label>
+        <select id="cf-color"></select>
         <div id="cf-dynamic"></div>
       `;
       const dynamicBox = document.getElementById('cf-dynamic');
       const originSelect = document.getElementById('cf-origin');
+      const colorSelect = document.getElementById('cf-color');
+      function refreshColors(){
+        const previous = colorSelect.value;
+        const colors = [...new Set(ORDERS.filter(o=>o.fileNumber===fileNumber && (o.origin||'COMMON')===originSelect.value).map(o=>(o.color||'').trim()))].sort((a,b)=>a.localeCompare(b));
+        colorSelect.innerHTML = colors.map(col=>`<option value="${escapeHtml(col)}">${escapeHtml(col || 'Unspecified colour')}</option>`).join('');
+        if(colors.includes(previous)) colorSelect.value = previous;
+      }
+      refreshColors();
       renderDynamic(fileNumber, originSelect.value, dynamicBox);
-      originSelect.onchange = ()=> renderDynamic(fileNumber, originSelect.value, dynamicBox);
+      originSelect.onchange = ()=>{ refreshColors(); renderDynamic(fileNumber, originSelect.value, dynamicBox); };
+      colorSelect.onchange = ()=> renderDynamic(fileNumber, originSelect.value, dynamicBox);
     }
 
     const fileInput = document.getElementById('cf-file');

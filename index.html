@@ -1095,6 +1095,14 @@ function renderNew(){
 
     <button type="button" class="btn-primary" id="save-order-btn">Save Order</button>
     <div class="msg" id="new-msg"></div>
+    <hr style="margin:28px 0;border:0;border-top:1px solid var(--border,#ddd)">
+    <h2 class="section-title">Edit Existing File</h2>
+    <p class="muted">File Number daal kar us file ke sabhi PO, country, color, date aur size-wise quantity edit karein.</p>
+    <div class="row">
+      <div><label>File Number to Edit</label><input type="text" id="edit-file-number" placeholder="Enter exact File Number" list="edit-file-list"><datalist id="edit-file-list">${[...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('')}</datalist></div>
+      <div style="align-self:end"><button type="button" class="btn-primary" id="load-edit-file">Load File</button></div>
+    </div>
+    <div id="edit-file-panel"></div>
   `;
   const sizeRows = document.getElementById('size-rows');
   function addSizeRow(size='', qty=''){
@@ -1139,7 +1147,58 @@ function renderNew(){
     document.getElementById('f-country').value='';
     sizeRows.querySelectorAll('.qty-input').forEach(inp=> inp.value='');
     document.getElementById('f-country').focus();
+    // Refresh the editable file-number choices after adding an order.
+    const dl = document.getElementById('edit-file-list');
+    if(dl) dl.innerHTML = [...new Set(ORDERS.map(o=>o.fileNumber).filter(Boolean))].map(f=>`<option value="${escapeHtml(f)}">`).join('');
   };
+
+  const editPanel = document.getElementById('edit-file-panel');
+  document.getElementById('load-edit-file').onclick = ()=> renderFileEditor(document.getElementById('edit-file-number').value.trim(), editPanel);
+}
+
+function renderFileEditor(fileNumber, panel){
+  if(!fileNumber){ panel.innerHTML='<div class="msg err show">Pehle File Number daalein.</div>'; return; }
+  const matches = ORDERS.filter(o=>String(o.fileNumber||'').trim().toLowerCase()===fileNumber.toLowerCase());
+  if(!matches.length){ panel.innerHTML='<div class="msg err show">Is File Number ka order nahi mila. Number check karein.</div>'; return; }
+  let draft = matches.map(o=>JSON.parse(JSON.stringify(o)));
+  const render = ()=>{
+    panel.innerHTML = `<div class="msg show">Loaded File: <b>${escapeHtml(fileNumber)}</b> — ${draft.length} order entr${draft.length===1?'y':'ies'}. Changes save karne ke liye neeche Save Changes dabayein.</div>` +
+      draft.map((o,idx)=>`<div class="sheet-block" style="padding:14px;margin:14px 0;border:1px solid var(--border,#ddd);border-radius:12px">
+        <div class="sheet-block-head"><b>Order Entry ${idx+1}</b><button type="button" class="rm edit-remove-entry" data-index="${idx}" style="float:right">Remove Entry</button></div>
+        <div class="row"><div><label>File Number</label><input data-field="fileNumber" data-index="${idx}" value="${escapeHtml(o.fileNumber||'')}" /></div><div><label>PO Number</label><input data-field="po" data-index="${idx}" value="${escapeHtml(o.po||'')}" /></div></div>
+        <div class="row"><div><label>Country Code</label><input data-field="country" data-index="${idx}" value="${escapeHtml(o.country||'')}" /></div><div><label>Origin</label><select data-field="origin" data-index="${idx}"><option value="COMMON" ${(o.origin||'COMMON')==='COMMON'?'selected':''}>Common</option><option value="MADE IN INDIA" ${(o.origin||'')==='MADE IN INDIA'?'selected':''}>Made In India</option></select></div></div>
+        <div class="row"><div><label>Cutting Date</label><input type="date" data-field="date" data-index="${idx}" value="${escapeHtml(o.date||'')}" /></div><div><label>Color</label><input data-field="color" data-index="${idx}" value="${escapeHtml(o.color||'')}" /></div></div>
+        <label>Size-wise Quantity</label><div class="size-box-wrap edit-sizes" data-index="${idx}">${(o.sizes||[]).map((z,si)=>`<div class="size-box"><button type="button" class="rm edit-remove-size" data-index="${idx}" data-size-index="${si}">×</button><input type="text" class="edit-size-val" data-index="${idx}" data-size-index="${si}" placeholder="Size" value="${escapeHtml(z.size)}"><input type="number" min="0" class="edit-qty-val" data-index="${idx}" data-size-index="${si}" placeholder="Qty" value="${escapeHtml(z.qty)}"></div>`).join('')}</div>
+        <button type="button" class="add-size-btn edit-add-size" data-index="${idx}">+ Add Size</button>
+      </div>`).join('') +
+      `<div class="row"><button type="button" class="add-size-btn" id="edit-add-entry">+ Add Order Entry</button><button type="button" class="btn-primary" id="save-file-edits">Save All Changes</button></div><div class="msg" id="edit-save-msg"></div>`;
+
+    panel.querySelectorAll('[data-field]').forEach(el=>el.addEventListener('input',()=>{draft[Number(el.dataset.index)][el.dataset.field]=el.value;}));
+    panel.querySelectorAll('.edit-size-val,.edit-qty-val').forEach(el=>el.addEventListener('input',()=>{
+      const o=draft[Number(el.dataset.index)], si=Number(el.dataset.sizeIndex); if(!o.sizes[si]) o.sizes[si]={size:'',qty:0};
+      if(el.classList.contains('edit-size-val')) o.sizes[si].size=el.value; else o.sizes[si].qty=el.value;
+    }));
+    panel.querySelectorAll('.edit-remove-size').forEach(btn=>btn.onclick=()=>{draft[+btn.dataset.index].sizes.splice(+btn.dataset.sizeIndex,1);render();});
+    panel.querySelectorAll('.edit-add-size').forEach(btn=>btn.onclick=()=>{draft[+btn.dataset.index].sizes.push({size:'',qty:0});render();});
+    panel.querySelectorAll('.edit-remove-entry').forEach(btn=>btn.onclick=()=>{if(confirm('Is order entry ko file se remove karna hai? Ye change Save All Changes dabane par save hoga.')){draft.splice(+btn.dataset.index,1);render();}});
+    document.getElementById('edit-add-entry').onclick=()=>{draft.push({id:uid(),fileNumber,po:'',country:'',origin:'COMMON',date:new Date().toISOString().slice(0,10),color:'',sizes:[{size:'',qty:0}],createdAt:Date.now()});render();};
+    document.getElementById('save-file-edits').onclick=async()=>{
+      // Capture the current form values before saving, including the last field edited.
+      panel.querySelectorAll('[data-field]').forEach(el=>{draft[+el.dataset.index][el.dataset.field]=el.value;});
+      panel.querySelectorAll('.edit-size-val,.edit-qty-val').forEach(el=>{const o=draft[+el.dataset.index],si=+el.dataset.sizeIndex;if(!o.sizes[si])o.sizes[si]={size:'',qty:0};if(el.classList.contains('edit-size-val'))o.sizes[si].size=el.value;else o.sizes[si].qty=el.value;});
+      const invalid=draft.some(o=>!String(o.fileNumber||'').trim()||!String(o.po||'').trim()||!String(o.country||'').trim()||!String(o.date||'').trim()||!(o.sizes||[]).some(z=>String(z.size||'').trim()&&Number(z.qty)>=0&&String(z.qty)!==''));
+      if(invalid){const m=document.getElementById('edit-save-msg');m.textContent='Har entry mein File Number, PO, Country, Date aur kam se kam ek valid Size/Qty bharein.';m.className='msg err show';return;}
+      const ids=new Set(matches.map(o=>o.id));
+      // Only replace records for the loaded file; every other file and all cutting/challan data remain untouched.
+      ORDERS=ORDERS.filter(o=>!ids.has(o.id));
+      draft.forEach(o=>{o.sizes=(o.sizes||[]).filter(z=>String(z.size||'').trim()!==''&&String(z.qty)!==''&&Number(z.qty)>=0).map(z=>({size:String(z.size).trim(),qty:Number(z.qty)}));if(!o.id)o.id=uid();if(!o.createdAt)o.createdAt=Date.now();ORDERS.push(o);});
+      await saveOrders();
+      const m=document.getElementById('edit-save-msg');m.textContent='File '+fileNumber+' ke changes save ho gaye.';m.className='msg show';
+      // Refresh the reference snapshot so a second save targets the latest records.
+      matches.splice(0,matches.length,...draft.map(o=>JSON.parse(JSON.stringify(o))));
+    };
+  };
+  render();
 }
 
 /* ---------- ORDER SHEET — shared size-matrix builder (sizes across top, countries down, grouped by File then PO, then Cutting Date) ---------- */

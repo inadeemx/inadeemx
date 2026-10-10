@@ -621,6 +621,25 @@ async function loadAll(){
     const ch = await window.storage.get('challans-data', false);
     CHALLANS = ch ? JSON.parse(ch.value) : [];
   }catch(e){ CHALLANS = []; }
+  // One-time, non-destructive history classification: the user confirmed all
+  // cutting issues recorded before unit/line tracking belong to Unit C66.
+  // Preserve challan rows, dates, quantities, IDs and any known line number.
+  let historyUnitUpdated = false;
+  CHALLANS = CHALLANS.map(challan => {
+    const oldIssuedTo = String(challan.issuedTo || COMPANY.issuedTo || '');
+    let nextIssuedTo;
+    if (/UNIT-[A-Z0-9_-]+/i.test(oldIssuedTo)) {
+      nextIssuedTo = oldIssuedTo.replace(/UNIT-[A-Z0-9_-]+/ig, 'UNIT-C66');
+    } else {
+      nextIssuedTo = `${oldIssuedTo} - UNIT-C66`.trim();
+    }
+    if (nextIssuedTo !== String(challan.issuedTo || '')) historyUnitUpdated = true;
+    return { ...challan, issuedTo: nextIssuedTo };
+  });
+  if (historyUnitUpdated) {
+    try { await saveChallans(); }
+    catch(e) { console.error('Could not save historical Unit C66 classification', e); }
+  }
   try{
     const cnt = await window.storage.get('challan-counter-data', false);
     CHALLAN_COUNTER = cnt ? Number(JSON.parse(cnt.value).value) : 0;
@@ -1355,7 +1374,7 @@ function renderCut(){
         </div>
       `).join('');
       const lineOptions = Array.from({length:10}, (_,i)=>i+1).map(n=>`<option value="${n}">Line ${n}</option>`).join('');
-      const unitOptions = UNITS.map(u=>`<option value="${u}">${u}</option>`).join('');
+      const unitOptions = UNITS.map(u=>`<option value="${u}" ${u==='C66'?'selected':''}>${u}</option>`).join('');
       dynamicBox.innerHTML = `
         <label>Cutting Issue Date</label>
         <input type="date" id="cf-date" value="${today}">

@@ -1839,20 +1839,29 @@ function buildChallanHtml(challan){
   challan.rows.forEach(r=>{ if(!sizeOrder.includes(r.size)) sizeOrder.push(r.size); });
   sizeOrder.sort((a,b)=> (Number(a)-Number(b)) || String(a).localeCompare(String(b)));
 
-  const byCountry = {};
-  const countryOrder = [];
+  // Keep rows separate by country + color + origin. If one PO/country has
+  // more than one color, never let the first color overwrite the others.
+  const byGroup = {};
+  const groupOrder = [];
   challan.rows.forEach(r=>{
-    if(!byCountry[r.country]){ byCountry[r.country]=[]; countryOrder.push(r.country); byCountry[r.country]._color = r.color||''; byCountry[r.country]._origin = r.origin||'COMMON'; }
-    byCountry[r.country].push(r);
+    const color = String(r.color || '').trim();
+    const origin = r.origin || 'COMMON';
+    const groupKey = JSON.stringify([r.country, color.toLowerCase(), origin]);
+    if(!byGroup[groupKey]){
+      byGroup[groupKey] = { country: r.country, color, origin, rows: [] };
+      groupOrder.push(groupKey);
+    }
+    byGroup[groupKey].rows.push(r);
   });
 
   const sizeHeadHtml = sizeOrder.map(sz=>`<th>${escapeHtml(String(sz))}</th>`).join('');
   const colTotals = {}; sizeOrder.forEach(sz=> colTotals[sz]=0);
   let grandTotal = 0;
 
-  const bodyRowsHtml = countryOrder.map((country,i)=>{
-    const list = byCountry[country];
-    const bySize = {}; list.forEach(r=> bySize[r.size]=Number(r.qty));
+  const bodyRowsHtml = groupOrder.map((groupKey,i)=>{
+    const group = byGroup[groupKey];
+    const list = group.rows;
+    const bySize = {}; list.forEach(r=> bySize[r.size]=(bySize[r.size]||0)+Number(r.qty));
     let rowTotal = 0;
     const sizeCellsHtml = sizeOrder.map(sz=>{
       const q = bySize[sz]||0;
@@ -1860,17 +1869,17 @@ function buildChallanHtml(challan){
       return `<td>${q>0?q:'-'}</td>`;
     }).join('');
     grandTotal += rowTotal;
-    const originSuffix = list._origin === 'MADE IN INDIA' ? ' - MADE IN INDIA' : '';
+    const originSuffix = group.origin === 'MADE IN INDIA' ? ' - MADE IN INDIA' : '';
     return `
       <tr>
         <td>${i+1}</td>
         <td>${escapeHtml(challan.fileNumber)}</td>
-        <td class="desc">CUTTING - ISSUE - (${escapeHtml(country)} - ${escapeHtml(challan.po)})${originSuffix}</td>
+        <td class="desc">CUTTING - ISSUE - (${escapeHtml(group.country)} - ${escapeHtml(challan.po)})${originSuffix}</td>
         <td></td>
         ${sizeCellsHtml}
         <td><b>${rowTotal}</b></td>
         <td>PCS</td>
-        <td>${escapeHtml(list._color||'')}</td>
+        <td>${escapeHtml(group.color)}</td>
       </tr>
     `;
   }).join('');
